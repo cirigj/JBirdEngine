@@ -47,9 +47,14 @@ namespace JBirdEngine {
 				if (singleton == null) {
 					singleton = this;
 				}
-				CharacterDatabase.characters = new List<CharacterData>(characterData);
+				ConditionalFlags.AddFlag("TestFlag1");
+				ConditionalFlags.AddFlag("TestFlag2");
+				ConditionalFlags.AddFlag("TestFlag3");
+				if (CharacterDatabase.characters.Count == 0) {
+					CharacterDatabase.characters = new List<CharacterData>(characterData);
+				}
 			}
-
+				
 			public void GetCharacters () {
 				List<CharacterData> newData = CharacterDatabase.AddAllCharacters();
 				for (int i = 0; i < newData.Count; i++) {
@@ -108,6 +113,19 @@ namespace JBirdEngine {
             }
 
         }
+
+		[System.Serializable]
+		public class StoryBranchEntry {
+
+			public StoryBranch thisBranch;
+			public StoryBranch parentBranch;
+			public List<StoryBranch> jumpList;
+
+			public StoryBranchEntry () {
+				jumpList = new List<StoryBranch>();
+			}
+
+		}
 
 		public static class ConditionalFlags {
 
@@ -193,6 +211,7 @@ namespace JBirdEngine {
 				Jump,
 				SetFlag,
 				SetStat,
+				Wait,
 			}
 
 			public enum ConditionalType {
@@ -370,6 +389,11 @@ namespace JBirdEngine {
 				return returnList;
 			}
 
+			public static IEnumerator ParseDialogue (StoryBranch currentStoryBranch) {
+
+				yield break;
+			}
+
 			public static CommandInfo ParseLine (string line, int lineNumber = -1) {
 				CommandInfo info = new CommandInfo();
 				if (!line.IsCommand()) {
@@ -435,6 +459,22 @@ namespace JBirdEngine {
 						return null;
 					}
 					return SetStat(tokens, lineNumber);
+				case "wait":
+					info.type = CommandType.Wait;
+					if (tokens.Count == 1) {
+						return info;
+					}
+					else if (tokens.Count != 2) {
+						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/wait' command (line {0}). Correct syntax is '/wait (seconds)'.", lineNumber);
+						return null;
+					}
+					float value = 0f;
+					if (!float.TryParse(tokens[1], out value)) {
+						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid value '{0}' for '/wait' command (line {1}).", tokens[1], lineNumber);
+						return null;
+					}
+					info.value = value;
+					return info;
 				default:
 					Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid command '{0}' (line {1}).{2}Attempted to parse line: '{3}'.", command, lineNumber, System.Environment.NewLine, line);
 					return null;
@@ -667,7 +707,7 @@ namespace JBirdEngine {
 				}
 				if (parseIndex == 4) {
 					if (tokens.Count != 5) {
-						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid arguments for 'set_stat' command (line {0}).", lineNumber);
+						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid arguments for '/set_stat' command (line {0}).", lineNumber);
 						return null;
 					}
 				}
@@ -676,7 +716,7 @@ namespace JBirdEngine {
 				//verify value
 				float value = 0f;
 				if (!float.TryParse(tokens[parseIndex], out value)) {
-					Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid value '{0}' for 'set_stat' command (line {1}).", tokens[parseIndex], lineNumber);
+					Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid value '{0}' for '/set_stat' command (line {1}).", tokens[parseIndex], lineNumber);
 					return null;
 				}
 				info.value = value;

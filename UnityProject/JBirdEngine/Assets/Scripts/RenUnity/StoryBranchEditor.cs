@@ -14,6 +14,7 @@ namespace JBirdEngine {
 
 			public TextAsset readFile;
 			public string writeFileName = "Assets/RenUnity/Json/Untitled.txt";
+			public string assetFileName = "Assets/RenUnity/Branches/Untitled.asset";
 
 			public override void OnInspectorGUI () {
 
@@ -30,8 +31,17 @@ namespace JBirdEngine {
 				GUILayout.Space(16);
 				if (GUILayout.Button("Write To File")) {
 					StoryBranchJsonSerializer.Write(writeFileName, editorTarget.storyBranch);
+					AssetDatabase.Refresh();
 				}
 				writeFileName = EditorGUILayout.TextField("File to write to:", writeFileName);
+
+				EditorGUILayout.Space();
+				if (GUILayout.Button("Save as Asset")) {
+					AssetDatabase.CreateAsset(editorTarget, assetFileName);
+					//AssetDatabase.SaveAssets();
+					AssetDatabase.Refresh();
+				}
+				assetFileName = EditorGUILayout.TextField("File to save to:", assetFileName);
 
 			}
 
