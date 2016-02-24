@@ -6,6 +6,11 @@ namespace JBirdEngine {
 
 	namespace RenUnity {
 
+		public static class RenUnityFilePaths {
+			public static string jsonFilePath = "Assets/JBirdEngine/RenUnity/Json/";
+			public static string branchesFilePath = "Assets/JBirdEngine/RenUnity/Branches/";
+		}
+
 		/// <summary>
 		/// Story branch custom inspector class.
 		/// </summary>
@@ -13,8 +18,8 @@ namespace JBirdEngine {
 		public class StoryBranchEditor : Editor {
 
 			public TextAsset readFile;
-			public string writeFileName = "Assets/RenUnity/Json/Untitled.txt";
-			public string assetFileName = "Assets/RenUnity/Branches/Untitled.asset";
+			public string writeFileName = "Assets/JBirdEngine/RenUnity/Json/Untitled.txt";
+			public string assetFileName = "Assets/JBirdEngine/RenUnity/Branches/Untitled.asset";
 
 			public override void OnInspectorGUI () {
 
@@ -22,15 +27,20 @@ namespace JBirdEngine {
 
 				StoryBranch editorTarget = (StoryBranch)target;
 
+				if (editorTarget.branch.branchName != string.Empty) {
+					writeFileName = string.Format("{0}{1}.txt", RenUnityFilePaths.jsonFilePath, editorTarget.branch.branchName);
+					assetFileName = string.Format("{0}{1}.asset", RenUnityFilePaths.branchesFilePath, editorTarget.branch.branchName);
+				}
+
 				GUILayout.Space(16);
 				if (GUILayout.Button("Read From File")) {
-					editorTarget.storyBranch = StoryBranchJsonSerializer.Read(readFile);
+					editorTarget.branch = StoryBranchJsonSerializer.Read(readFile);
 				}
 				readFile = EditorGUILayout.ObjectField("File to read from:", readFile, typeof(TextAsset), true) as TextAsset;
 
 				GUILayout.Space(16);
 				if (GUILayout.Button("Write To File")) {
-					StoryBranchJsonSerializer.Write(writeFileName, editorTarget.storyBranch);
+					StoryBranchJsonSerializer.Write(writeFileName, editorTarget.branch);
 					AssetDatabase.Refresh();
 				}
 				writeFileName = EditorGUILayout.TextField("File to write to:", writeFileName);

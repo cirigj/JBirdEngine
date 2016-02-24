@@ -8,7 +8,7 @@ namespace JBirdEngine {
 		[CreateAssetMenu]
 		public class StoryBranch : ScriptableObject {
 			
-			public Branch storyBranch;
+			public Branch branch;
 			
 		}
 

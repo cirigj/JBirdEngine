@@ -21,6 +21,14 @@ namespace JBirdEngine {
 				targetBase = (RenUnityBase)target;
 
 				EditorGUILayout.Space();
+				EditorGUILayout.LabelField("RenUnity File Paths:", EditorStyles.boldLabel);
+				EditorGUILayout.LabelField("Directory for storing JSON files:");
+				RenUnityFilePaths.jsonFilePath = EditorGUILayout.TextField(RenUnityFilePaths.jsonFilePath);
+				EditorGUILayout.LabelField("Directory for storing Branch assets:");
+				RenUnityFilePaths.branchesFilePath = EditorGUILayout.TextField(RenUnityFilePaths.branchesFilePath);
+				EditorGUILayout.Space();
+
+				EditorGUILayout.Space();
 				EditorGUILayout.LabelField("Conditional Flags (most recent first):", EditorStyles.boldLabel);
 				EditorGUILayout.BeginVertical();
 				if (targetBase.conditionalFlags.Count == 0) {
@@ -62,6 +70,7 @@ namespace JBirdEngine {
 
 				EditorGUILayout.Space();
 				EditorGUILayout.LabelField("Story Branch Organizer:", EditorStyles.boldLabel);
+				AssetDatabase.Refresh();
 				if (StoryBranchOrganizer.singleton == null) {
 					EditorGUILayout.LabelField("[Create in Assets folder to use]");
 				}
