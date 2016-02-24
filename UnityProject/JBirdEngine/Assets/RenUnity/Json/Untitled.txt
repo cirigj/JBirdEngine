@@ -1,9 +1,0 @@
-{
-    "branchName": "ExampleBranch",
-    "script": [
-        "Oh dear",
-        "I think I fixed it?",
-        "This might not suck as hard",
-        "Still going to have to do more work tho"
-    ]
-}
