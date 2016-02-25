@@ -18,6 +18,7 @@ namespace JBirdEngine {
 			int removeCheckJ = -1;
 
 			public override void OnInspectorGUI (){
+				base.OnInspectorGUI();
 				targetBase = (RenUnityBase)target;
 
 				EditorGUILayout.Space();
@@ -26,6 +27,12 @@ namespace JBirdEngine {
 				RenUnityFilePaths.jsonFilePath = EditorGUILayout.TextField(RenUnityFilePaths.jsonFilePath);
 				EditorGUILayout.LabelField("Directory for storing Branch assets:");
 				RenUnityFilePaths.branchesFilePath = EditorGUILayout.TextField(RenUnityFilePaths.branchesFilePath);
+				EditorGUILayout.Space();
+
+				EditorGUILayout.Space();
+				EditorGUILayout.LabelField("RenUnity Variables:", EditorStyles.boldLabel);
+				EditorGUILayout.LabelField("Text write speed (in seconds between characters; lower = faster):");
+				targetBase.writeSpeed = EditorGUILayout.FloatField("Write Speed:", targetBase.writeSpeed);
 				EditorGUILayout.Space();
 
 				EditorGUILayout.Space();

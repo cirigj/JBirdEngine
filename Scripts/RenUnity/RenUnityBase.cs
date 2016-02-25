@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Linq;
+using UnityEngine.UI;
 
 // TODO:
 // Add library of story branches
@@ -42,16 +43,28 @@ namespace JBirdEngine {
 
 			public List<CharacterData> characterData = new List<CharacterData>();
 
+			public float writeSpeed = 0.1f;
+
+			public Text textBox;
+
 			void Awake () {
 				if (singleton == null) {
 					singleton = this;
 				}
 				GetCharacters();
 				CharacterDatabase.characters = characterData;
+				DialogueBoxHandler.writeSpeed = writeSpeed;
+				DialogueBoxHandler.boxText = textBox;
 			}
 
 			void Start () {
 				StartCoroutine(DialogueParser.ParseDialogue(StoryBranchOrganizer.singleton.entries[0].thisBranch));
+			}
+
+			void Update () {
+				if (Input.GetKeyDown(KeyCode.Return)) {
+					DialogueBoxHandler.Next();
+				}
 			}
 				
 			public void GetCharacters () {
@@ -216,6 +229,22 @@ namespace JBirdEngine {
 
 		public static class DialogueBoxHandler {
 
+			private static bool writingDialogue = false;
+			private static bool skipDialogue = false;
+			private static Coroutine writingRoutine;
+
+			public static Text boxText;
+			public static float writeSpeed;
+
+			public static void Next () {
+				if (writingDialogue) {
+					skipDialogue = true;
+				}
+				else {
+					DialogueParser.ContinueParsingScript();
+				}
+			}
+
 			public static void CharacterStartTalking (Character character) {
 
 			}
@@ -226,7 +255,76 @@ namespace JBirdEngine {
 
 			public static void DisplayMessage (string message) {
 				ClearOptions();
+				if (RenUnityBase.singleton == null) {
+					Debug.LogErrorFormat("RenUnity.DialogueBoxHandler: No RenUnityBase instance exists! Please make sure one is instantiated, and start this coroutine on 'RenUnityBase.singleton'.");
+					return;
+				}
+				writingRoutine = RenUnityBase.singleton.StartCoroutine(UpdateMessage(message));
+			}
 
+			public static IEnumerator UpdateMessage (string message) {
+				if (boxText == null) {
+					Debug.LogErrorFormat("RenUnity.DialogueBoxHandler: No text box to write to! Make sure to use '/start_talk' command before attempting to display dialogue.");
+					yield break;
+				}
+				boxText.text = string.Empty;
+				writingDialogue = true;
+				float snapshotWriteSpeed = writeSpeed;
+				for (int i = 0; i < message.Length; i++) {
+					//special characters
+					if (message[i] == '/') {
+						i++;
+						if (message[i] == 'p') {
+							if (!skipDialogue) {
+								yield return new WaitForSeconds(snapshotWriteSpeed);
+							}
+						}
+						else if (message[i] == 'b') {
+							boxText.text = boxText.text.Substring(0, boxText.text.Length - 1);
+							if (!skipDialogue) {
+								yield return new WaitForSeconds(snapshotWriteSpeed);
+							}
+						}
+						else if (message[i] == 'h') {
+							snapshotWriteSpeed = 2f * writeSpeed;
+						}
+						else if (message[i] == 'd') {
+							snapshotWriteSpeed = 0.5f * writeSpeed;
+						}
+						else if (message[i] == 'q') {
+							snapshotWriteSpeed = 4f * writeSpeed;
+						}
+						else if (message[i] == 'f') {
+							snapshotWriteSpeed = 0.25f * writeSpeed;
+						}
+						else if (message[i] == 'r') {
+							snapshotWriteSpeed = writeSpeed;
+						}
+						else if (message[i] == 'i') {
+							i++;
+							while (i < message.Length && message[i] != '/') {
+								boxText.text = string.Concat(boxText.text, message[i]);
+								i++;
+							}
+						}
+						else if (message[i] == '/') {
+							boxText.text = string.Concat(boxText.text, message[i]);
+							if (!skipDialogue) {
+								yield return new WaitForSeconds(snapshotWriteSpeed);
+							}
+						}
+					}
+					else {
+						boxText.text = string.Concat(boxText.text, message[i]);
+						if (!skipDialogue) {
+							yield return new WaitForSeconds(snapshotWriteSpeed);
+						}
+					}
+				}
+				skipDialogue = false;
+				writingDialogue = false;
+				writingRoutine = null;
+				yield break;
 			}
 
 			public static void ClearOptions () {
@@ -248,7 +346,9 @@ namespace JBirdEngine {
 			public static Coroutine parseRoutine;
 
 			public static void ContinueParsingScript () {
-				waitingForInput = false;
+				if (waitingForInput) {
+					waitingForInput = false;
+				}
 			}
 
 			public enum CommandType {
@@ -478,7 +578,6 @@ namespace JBirdEngine {
 				currentBranchIndex = branchIndex;
 				for (int i = 0; i < currentStoryBranch.branch.script.Count; i++) {
 					CommandInfo info = ParseLine(currentStoryBranch.branch.script[i], i, currentStoryBranch.branch.branchName);
-					Debug.Log(info);
 					switch (info.type) {
 					case CommandType.Message:
 						DialogueBoxHandler.DisplayMessage(info.message);
