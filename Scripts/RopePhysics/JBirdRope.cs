@@ -18,9 +18,15 @@ namespace JBirdEngine {
 			public int numberOfSegments;
 			[Range(0f,1f)]
 			public float elasticity = 0.5f;
-			[ViewOnly][SerializeField]
+            #if UNITY_EDITOR
+            [ViewOnly]
+            #endif
+            [SerializeField]
 			private float _minTension;
-			[ViewOnly][SerializeField]
+            #if UNITY_EDITOR
+            [ViewOnly]
+            #endif
+            [SerializeField]
 			private float _maxTension;
 			[Range(0.001f, 1f)]
 			public float tapering = 1f;
@@ -29,7 +35,9 @@ namespace JBirdEngine {
 			public bool anchoredEnd;
 			[Header("Rope Segements:")]
 			public JBirdRopeNode segmentPrefab;
-			[ViewOnly]
+            #if UNITY_EDITOR
+            [ViewOnly]
+            #endif
 			public List<JBirdRopeNode> segmentList;
 			[Header("Iteration Limit (WARNING: MODIFY AT OWN RISK):")]
 			public int iterationLimit = 500;
