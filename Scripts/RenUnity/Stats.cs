@@ -23,7 +23,7 @@
 		// *   dialogue commands.                                                      *
 		// * ~ DO NOT REORDER THESE NAMES, it will break any character data you may    *
 		// *   have saved (re-naming is fine).                                         *
-		// * ~ WARNING: Removing characters from the middle of the list will also      *
+		// * ~ WARNING: Removing stats from the middle of the list will also           *
 		// *   break and character data you may have saved.                            *
 		// *****************************************************************************
 

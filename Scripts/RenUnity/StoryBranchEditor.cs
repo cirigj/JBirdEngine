@@ -35,12 +35,14 @@ namespace JBirdEngine {
 				GUILayout.Space(16);
 				if (GUILayout.Button("Read From File")) {
 					editorTarget.branch = StoryBranchJsonSerializer.Read(readFile);
+					EditorUtility.SetDirty(target);
 				}
 				readFile = EditorGUILayout.ObjectField("File to read from:", readFile, typeof(TextAsset), true) as TextAsset;
 
 				GUILayout.Space(16);
 				if (GUILayout.Button("Write To File")) {
 					StoryBranchJsonSerializer.Write(writeFileName, editorTarget.branch);
+					EditorUtility.SetDirty(target);
 					AssetDatabase.Refresh();
 				}
 				writeFileName = EditorGUILayout.TextField("File to write to:", writeFileName);
@@ -48,7 +50,7 @@ namespace JBirdEngine {
 				EditorGUILayout.Space();
 				if (GUILayout.Button("Save as Asset")) {
 					AssetDatabase.CreateAsset(editorTarget, assetFileName);
-					//AssetDatabase.SaveAssets();
+					EditorUtility.SetDirty(target);
 					AssetDatabase.Refresh();
 				}
 				assetFileName = EditorGUILayout.TextField("File to save to:", assetFileName);

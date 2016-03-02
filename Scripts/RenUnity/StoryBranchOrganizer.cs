@@ -7,6 +7,7 @@ namespace JBirdEngine {
 	namespace RenUnity {
 
 		[CreateAssetMenu]
+		[System.Serializable]
 		public class StoryBranchOrganizer : ScriptableObject {
 
 			public static StoryBranchOrganizer singleton;

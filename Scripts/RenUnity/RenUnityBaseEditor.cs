@@ -2,6 +2,7 @@
 using System.Collections;
 #if UNITY_EDITOR
 using UnityEditor;
+using UnityEditor.SceneManagement;
 #endif
 
 namespace JBirdEngine {
@@ -29,11 +30,15 @@ namespace JBirdEngine {
 				RenUnityFilePaths.branchesFilePath = EditorGUILayout.TextField(RenUnityFilePaths.branchesFilePath);
 				EditorGUILayout.Space();
 
+				EditorGUILayout.Separator();
+
 				EditorGUILayout.Space();
 				EditorGUILayout.LabelField("RenUnity Variables:", EditorStyles.boldLabel);
 				EditorGUILayout.LabelField("Text write speed (in seconds between characters; lower = faster):");
 				targetBase.writeSpeed = EditorGUILayout.FloatField("Write Speed:", targetBase.writeSpeed);
 				EditorGUILayout.Space();
+
+				EditorGUILayout.Separator();
 
 				EditorGUILayout.Space();
 				EditorGUILayout.LabelField("Conditional Flags (most recent first):", EditorStyles.boldLabel);
@@ -47,41 +52,54 @@ namespace JBirdEngine {
 				}
 				GUI.enabled = true;
 				EditorGUILayout.EndVertical();
+				EditorGUILayout.Space();
 
+				EditorGUILayout.Separator();
+
+				EditorGUILayout.Space();
+				EditorGUILayout.LabelField("Characters:", EditorStyles.boldLabel);
 				EditorGUILayout.Space();
 				if (GUILayout.Button("Update Character List")) {
 					targetBase.GetCharacters();
 				}
-
-				EditorGUILayout.Space();
-				EditorGUILayout.LabelField("Characters:", EditorStyles.boldLabel);
 				EditorGUILayout.BeginVertical();
 				if (targetBase.characterData.Count == 0) {
 					EditorGUILayout.LabelField("[none]");
 				}
 				for (int i =0; i < targetBase.characterData.Count; i++) {
 					EditorGUILayout.Space();
-					GUI.enabled = false;
-					EditorGUILayout.EnumPopup("Name:", targetBase.characterData[i].name);
-					GUI.enabled = true;
+					EditorGUILayout.LabelField(string.Format("Name: {0}", targetBase.characterData[i].name), EditorStyles.boldLabel);
 					EditorGUILayout.BeginVertical();
+					targetBase.characterData[i].defaultPortrait = (Sprite)EditorGUILayout.ObjectField("Default Portrait", targetBase.characterData[i].defaultPortrait, typeof(Sprite), false);
+					for (int j = 0; j < targetBase.characterData[i].portraits.Count; j++) {
+						targetBase.characterData[i].portraits[j].portrait = (Sprite)EditorGUILayout.ObjectField(string.Format("{0}", targetBase.characterData[i].portraits[j].mood), targetBase.characterData[i].portraits[j].portrait, typeof(Sprite), false);
+					}
 					for (int j = 0; j < targetBase.characterData[i].stats.Count; j++) {
-						GUI.enabled = false;
-						EditorGUILayout.EnumPopup("Stat:", targetBase.characterData[i].stats[j].stat);
-						GUI.enabled = true;
-						targetBase.characterData[i].stats[j].value = EditorGUILayout.FloatField("Value:", targetBase.characterData[i].stats[j].value);
+						targetBase.characterData[i].stats[j].value = EditorGUILayout.FloatField(string.Format("{0}", targetBase.characterData[i].stats[j].stat), targetBase.characterData[i].stats[j].value);
 					}
 					EditorGUILayout.EndVertical();
 				}
 				EditorGUILayout.EndVertical();
+				EditorGUILayout.Space();
+
+				EditorGUILayout.Separator();
 
 				EditorGUILayout.Space();
 				EditorGUILayout.LabelField("Story Branch Organizer:", EditorStyles.boldLabel);
 				AssetDatabase.Refresh();
-				if (StoryBranchOrganizer.singleton == null) {
+				if (StoryBranchOrganizer.singleton == null && targetBase.singletonSBO == null) {
 					EditorGUILayout.LabelField("[Create in Assets folder to use]");
 				}
 				else {
+					if (targetBase.singletonSBO != null) {
+						StoryBranchOrganizer.singleton = targetBase.singletonSBO;
+					}
+					else {
+						targetBase.singletonSBO = StoryBranchOrganizer.singleton;
+						EditorUtility.SetDirty(target);
+						EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+						EditorUtility.SetDirty(StoryBranchOrganizer.singleton);
+					}
 					EditorGUILayout.BeginVertical();
 					for (int i = 0; i < StoryBranchOrganizer.singleton.entries.Count; i++) {
 						EditorGUILayout.Space();
