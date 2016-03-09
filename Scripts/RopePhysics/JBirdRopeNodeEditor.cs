@@ -8,12 +8,12 @@ namespace JBirdEngine {
 
 	namespace RopePhysics {
 
-		public static class AnchorLock {
+        #if UNITY_EDITOR
+        public static class AnchorLock {
 			public static bool lockAnchors;
 			public static Tool prevTool;
 		}
 
-		#if UNITY_EDITOR
 		[CustomEditor(typeof(JBirdRopeNode))]
 		public class JBirdRopeNodeEditor : Editor {
 
