@@ -11,6 +11,7 @@ public class TestScript : MonoBehaviour {
 	public Markov.NameGenerator nameGenerator;
 
 	public JBirdEngine.ColorLibrary.MoreColors.BobRoss.ColorPalette bobRoss;
+    public JBirdEngine.ColorLibrary.MoreColors.Vaporwave.ColorPalette vaporwave;
 
     enum TestEnum {
         ohgeezrick,

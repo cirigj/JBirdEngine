@@ -218,6 +218,136 @@ namespace JBirdEngine {
 
             }
 
+            /// <summary>
+            /// The people demanded it, so I delivered. You're welcome, 90's kids.
+            /// </summary>
+            public static class Vaporwave {
+
+                /// <summary>
+                /// It's an enum, but for vaporwave color indices.
+                /// </summary>
+                public enum ColorPalette {
+                    yukikaze,
+                    amatsukaze,
+                    kongou,
+                    haruna,
+                    nagato,
+                    shimakaze,
+                    yamashiro,
+                    akagi,
+                    yahagi,
+                    agano,
+                    zuikaku,
+                    shoukaku,
+                    souryuu,
+                    mogami,
+                    yamato
+                }
+
+                /// <summary>
+                /// Converts the enum value from the Vaporwave palette to a usable color.
+                /// </summary>
+                /// <param name="enumValue">The value to convert.</param>
+                /// <returns>The corresponding color.</returns>
+                public static Color EnumToColor (ColorPalette enumValue) {
+                    switch (enumValue) {
+                        case ColorPalette.yukikaze:
+                            return yukikaze;
+                        case ColorPalette.amatsukaze:
+                            return amatsukaze;
+                        case ColorPalette.kongou:
+                            return kongou;
+                        case ColorPalette.haruna:
+                            return haruna;
+                        case ColorPalette.nagato:
+                            return nagato;
+                        case ColorPalette.shimakaze:
+                            return shimakaze;
+                        case ColorPalette.yamashiro:
+                            return yamashiro;
+                        case ColorPalette.akagi:
+                            return akagi;
+                        case ColorPalette.yahagi:
+                            return yahagi;
+                        case ColorPalette.agano:
+                            return agano;
+                        case ColorPalette.zuikaku:
+                            return zuikaku;
+                        case ColorPalette.shoukaku:
+                            return shoukaku;
+                        case ColorPalette.souryuu:
+                            return souryuu;
+                        case ColorPalette.mogami:
+                            return mogami;
+                        case ColorPalette.yamato:
+                            return yamato;
+                        default:
+                            return yukikaze;
+                    }
+                }
+
+                public static Color yukikaze {
+                    get { return ColorHelper.ToColor(0xC6ACC9); }
+                }
+
+                public static Color amatsukaze {
+                    get { return ColorHelper.ToColor(0xECB4BF); }
+                }
+
+                public static Color kongou {
+                    get { return ColorHelper.ToColor(0xFDD6B5); }
+                }
+
+                public static Color haruna {
+                    get { return ColorHelper.ToColor(0xFDF3B8); }
+                }
+
+                public static Color nagato {
+                    get { return ColorHelper.ToColor(0xA7E4AE); }
+                }
+
+                public static Color shimakaze {
+                    get { return ColorHelper.ToColor(0xBFFFE6); }
+                }
+
+                public static Color yamashiro {
+                    get { return ColorHelper.ToColor(0x8699D1); }
+                }
+
+                public static Color akagi {
+                    get { return ColorHelper.ToColor(0xDBA9CE); }
+                }
+
+                public static Color yahagi {
+                    get { return ColorHelper.ToColor(0xAAE7E8); }
+                }
+
+                public static Color agano {
+                    get { return ColorHelper.ToColor(0xEFE6EB); }
+                }
+
+                public static Color zuikaku {
+                    get { return ColorHelper.ToColor(0x47D1D5); }
+                }
+
+                public static Color shoukaku {
+                    get { return ColorHelper.ToColor(0xE8D2FF); }
+                }
+
+                public static Color souryuu {
+                    get { return ColorHelper.ToColor(0xC1D1FD); }
+                }
+
+                public static Color mogami {
+                    get { return ColorHelper.ToColor(0xD9E0FC); }
+                }
+
+                public static Color yamato {
+                    get { return ColorHelper.ToColor(0xFFE0F1); }
+                }
+
+            }
+
             public static Color purple {
                 get { return ColorHelper.ToColor(0x800080); }
             }
