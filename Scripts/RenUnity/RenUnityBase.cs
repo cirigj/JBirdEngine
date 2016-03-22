@@ -329,7 +329,7 @@ namespace JBirdEngine {
 			}
 
 			public static IEnumerator CloseMessageBox () {
-				if (messageBox == null) {
+				if (!messageBox.isActiveAndEnabled) {
 					yield break;
 				}
 				messageBox.animator.SetTrigger("closeTrig");
