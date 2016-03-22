@@ -329,6 +329,9 @@ namespace JBirdEngine {
 			}
 
 			public static IEnumerator CloseMessageBox () {
+				if (messageBox == null) {
+					yield break;
+				}
 				messageBox.animator.SetTrigger("closeTrig");
 				yield return new WaitForSeconds(messageBox.animator.GetCurrentAnimatorStateInfo(0).length * messageBox.animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
 				DialogueParser.ContinuePostAnimation();
