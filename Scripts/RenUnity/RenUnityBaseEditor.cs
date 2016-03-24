@@ -18,16 +18,16 @@ namespace JBirdEngine {
 			int removeCheckI = -1;
 			int removeCheckJ = -1;
 
-			public override void OnInspectorGUI (){
+			public override void OnInspectorGUI () {
 				base.OnInspectorGUI();
 				targetBase = (RenUnityBase)target;
 
 				EditorGUILayout.Space();
 				EditorGUILayout.LabelField("RenUnity File Paths:", EditorStyles.boldLabel);
 				EditorGUILayout.LabelField("Directory for storing JSON files:");
-				RenUnityFilePaths.jsonFilePath = EditorGUILayout.TextField(RenUnityFilePaths.jsonFilePath);
+				RenUnityFilePaths.jsonFilePath = targetBase.jsonFilePath = EditorGUILayout.TextField(targetBase.jsonFilePath);
 				EditorGUILayout.LabelField("Directory for storing Branch assets:");
-				RenUnityFilePaths.branchesFilePath = EditorGUILayout.TextField(RenUnityFilePaths.branchesFilePath);
+				RenUnityFilePaths.branchesFilePath = targetBase.branchesFilePath = EditorGUILayout.TextField(targetBase.branchesFilePath);
 				EditorGUILayout.Space();
 
 				EditorGUILayout.Separator();
@@ -166,6 +166,7 @@ namespace JBirdEngine {
 						EditorUtility.SetDirty(StoryBranchOrganizer.singleton);
 					}
 				}
+				EditorUtility.SetDirty(targetBase);
 			}
 
 		}
