@@ -17,7 +17,7 @@ public class TestScript : MonoBehaviour {
 	[Range(0f, 1f)]
 	public float saturation;
 
-	public Color lumaHue;
+	public Color lumaChromaColor;
 
 	public JBirdEngine.ColorLibrary.MoreColors.BobRoss.ColorPalette bobRoss;
     public JBirdEngine.ColorLibrary.MoreColors.Vaporwave.ColorPalette vaporwave;
@@ -35,7 +35,7 @@ public class TestScript : MonoBehaviour {
 	}
 
 	void Update () {
-		lumaHue = JBirdEngine.ColorLibrary.ColorHelper.FromChromaAndLuma(hue, saturation, luma);
+		lumaChromaColor = JBirdEngine.ColorLibrary.ColorHelper.FromChromaAndLuma(hue, saturation, luma);
 	}
 
 }

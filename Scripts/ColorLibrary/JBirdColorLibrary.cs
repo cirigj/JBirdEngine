@@ -896,6 +896,18 @@ namespace JBirdEngine {
 
 			}
 
+			public static float GetLuma (this Color color, bool useBT709 = false) {
+				float rVal = 0.299f;
+				float gVal = 0.587f;
+				float bVal = 0.114f;
+				if (useBT709) { //using BT.709 instead of BT.601
+					rVal = 0.2126f;
+					gVal = 0.7152f;
+					bVal = 0.0722f;
+				}
+				return color.r * rVal + color.g * gVal + color.b * bVal;
+			}
+
 			public static Color FromChromaAndLuma (Chroma chroma, float luma, bool useBT709 = false) {
 				return FromChromaAndLuma(chroma.hue, chroma.saturation, luma, useBT709);
 			}
