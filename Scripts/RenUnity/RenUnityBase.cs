@@ -19,10 +19,15 @@ namespace JBirdEngine {
 
 			public StoryBranchOrganizer singletonSBO;
 
+            #if UNITY_EDITOR
 			public string jsonFilePath = RenUnityFilePaths.jsonFilePath;
 			public string branchesFilePath = RenUnityFilePaths.branchesFilePath;
+            #else
+            public string jsonFilePath = string.Empty;
+			public string branchesFilePath = string.Empty;
+            #endif
 
-			public List<string> conditionalFlags = new List<string>();
+            public List<string> conditionalFlags = new List<string>();
 
 			public List<CharacterData> characterData = new List<CharacterData>();
 
