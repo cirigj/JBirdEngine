@@ -879,6 +879,27 @@ namespace JBirdEngine {
                 return rainbow;
             }
 
+			public class Chroma {
+				
+				public int hue;
+				public float saturation;
+
+				public Chroma () {
+					hue = 0;
+					saturation = 0;
+				}
+
+				public Chroma (int h, float s) {
+					hue = h;
+					saturation = s;
+				}
+
+			}
+
+			public static Color FromChromaAndLuma (Chroma chroma, float luma, bool useBT709 = false) {
+				return FromChromaAndLuma(chroma.hue, chroma.saturation, luma, useBT709);
+			}
+
 			/// <summary>
 			/// Returns a color with the specified hue and luma. Defaults to BT.601.
 			/// </summary>
@@ -886,7 +907,7 @@ namespace JBirdEngine {
 			/// <param name="hue">Hue.</param>
 			/// <param name="luma">Luma.</param>
 			/// <param name="useBT709">Uses BT.709 instead of BT.601 if set to true.</param>
-			public static Color FromHueAndLuma (int hue, float luma, bool useBT709 = false) {
+			public static Color FromChromaAndLuma (int hue, float saturation, float luma, bool useBT709 = false) {
 				float rVal = 0.299f;
 				float gVal = 0.587f;
 				float bVal = 0.114f;
@@ -1066,7 +1087,7 @@ namespace JBirdEngine {
 					}
 					break;
 				}
-				return new Color (red, green, blue);
+				return Color.Lerp(new Color(luma, luma, luma), new Color (red, green, blue), saturation);
 			}
 
         }

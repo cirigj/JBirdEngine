@@ -14,6 +14,8 @@ public class TestScript : MonoBehaviour {
 	public float luma;
 	[Range(0, 360)]
 	public int hue;
+	[Range(0f, 1f)]
+	public float saturation;
 
 	public Color lumaHue;
 
@@ -33,7 +35,7 @@ public class TestScript : MonoBehaviour {
 	}
 
 	void Update () {
-		lumaHue = JBirdEngine.ColorLibrary.ColorHelper.FromHueAndLuma(hue, luma);
+		lumaHue = JBirdEngine.ColorLibrary.ColorHelper.FromChromaAndLuma(hue, saturation, luma);
 	}
 
 }
