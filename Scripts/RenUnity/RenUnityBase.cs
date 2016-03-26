@@ -6,28 +6,6 @@ using System.Text;
 using System.Linq;
 using UnityEngine.UI;
 
-// TODO:
-// Add library of story branches
-// Add library of characters
-// Add button to check for parsing errors
-//    Verify Characters (speaking/entrance/exit)
-//    Verify Moods
-//    Verify Jumps
-//    Verify Stats (set/check)
-// Add actual decoding of story branches into UI
-//    GoToNextLine
-//    ChooseOption
-// Add "none" keyword for not jumping to a new branch
-// Add ability to add multiple commands in story branches
-// Add name of character speaking (#[name]:)
-// Add character moods/portraits (#mood [name] [mood]:)
-// Add character entrances/exits (#enter [name] (location):/#exit [name] (location):) - default to center
-// Add character stats changing (#stat [name] [stat] [n]:) - also for option consequence
-// Add backgrounds (#bg [image]:)
-// Add fade (#fade [seconds]:) - also for option consequences
-// Add if statements to options (#if [stat] [n]:) - only for option consequence
-// Add if statements to branching (#if [stat] [n] [jumpTo]: #jump [defaultJumpTo]) - also for option consequence, otherwise happens immediately
-
 namespace JBirdEngine {
 
 	namespace RenUnity {
@@ -411,7 +389,7 @@ namespace JBirdEngine {
 				float snapshotWriteSpeed = writeSpeed;
 				for (int i = 0; i < message.Length; i++) {
 					//special characters
-					if (message[i] == '/') {
+					if (message[i] == '#') {
 						i++;
 						if (message[i] == 'p') {
 							if (!skipDialogue) {
@@ -441,17 +419,17 @@ namespace JBirdEngine {
 						}
 						else if (message[i] == 'i') {
 							i++;
-							while (i < message.Length && message[i] != '/') {
+							while (i < message.Length && message[i] != '#') {
 								boxText.text = string.Concat(boxText.text, message[i]);
 								i++;
 							}
 						}
-						else if (message[i] == '/') {
-							boxText.text = string.Concat(boxText.text, message[i]);
-							if (!skipDialogue) {
-								yield return new WaitForSeconds(snapshotWriteSpeed);
-							}
-						}
+                        else if (message[i] == '#') {
+                            boxText.text = string.Concat(boxText.text, message[i]);
+                            if (!skipDialogue) {
+                                yield return new WaitForSeconds(snapshotWriteSpeed);
+                            }
+                        }
 					}
 					else {
 						boxText.text = string.Concat(boxText.text, message[i]);
@@ -510,6 +488,12 @@ namespace JBirdEngine {
 			public static int currentBranchIndex;
 
 			public static Coroutine parseRoutine;
+
+            public static bool isParsing {
+                get {
+                    return parseRoutine != null;
+                }
+            }
 
 			public static void ParseBranch (StoryBranch branch) {
 				if (DialogueParser.parseRoutine != null) {
@@ -748,26 +732,43 @@ namespace JBirdEngine {
 				CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value += value;
 			}
 
-			public static IEnumerator ParseDialogue (StoryBranch currentStoryBranch) {
+			private static IEnumerator ParseDialogue (StoryBranch currentStoryBranch) {
 				if (StoryBranchOrganizer.singleton == null) {
 					Debug.LogErrorFormat("RenUnity.DialogueParser: No StoryBranchOrganizer instance exists! Please create one somewhere in the Assets folder.");
+                    parseRoutine = null;
 					yield break;
 				}
 				if (RenUnityBase.singleton == null) {
 					Debug.LogErrorFormat("RenUnity.DialogueParser: No RenUnityBase instance exists! Please make sure one is instantiated, and start this coroutine on 'RenUnityBase.singleton'.");
+                    parseRoutine = null;
 					yield break;
 				}
-				int branchIndex = -1;
-				for (int i = 0; i < StoryBranchOrganizer.singleton.entries.Count; i++) {
-					if (StoryBranchOrganizer.singleton.entries[i].thisBranch == currentStoryBranch) {
-						branchIndex = i;
-					}
-				}
-				if (branchIndex == -1) {
-					Debug.LogErrorFormat("RenUnity.DialogueParser: Story Branch {0} has not been added to the Story Branch Organizer!", currentStoryBranch.branch.branchName);
-					yield break;
-				}
-				currentBranchIndex = branchIndex;
+                int branchIndex = -1;
+                bool useCache = false;
+                if (currentStoryBranch.cachedIndex < StoryBranchOrganizer.singleton.entries.Count && currentStoryBranch.cachedIndex >= 0) {
+                    if (StoryBranchOrganizer.singleton.entries[currentStoryBranch.cachedIndex].thisBranch == currentStoryBranch) {
+                        branchIndex = currentStoryBranch.cachedIndex;
+                        useCache = true;
+                    }
+                }
+                if (!useCache) {
+                    branchIndex = -1;
+                    for (int i = 0; i < StoryBranchOrganizer.singleton.entries.Count; i++) {
+                        if (StoryBranchOrganizer.singleton.entries[i].thisBranch == currentStoryBranch) {
+                            branchIndex = i;
+                        }
+                    }
+                    if (branchIndex == -1) {
+                        Debug.LogErrorFormat("RenUnity.DialogueParser: Story Branch {0} has not been added to the Story Branch Organizer!", currentStoryBranch.branch.branchName);
+                        parseRoutine = null;
+                        yield break;
+                    }
+                    currentStoryBranch.cachedIndex = branchIndex;
+                    #if UNITY_EDITOR
+                    UnityEditor.EditorUtility.SetDirty(currentStoryBranch);
+                    #endif
+                }
+                currentBranchIndex = branchIndex;
 				for (int i = 0; i < currentStoryBranch.branch.script.Count; i++) {
 					CommandInfo info = ParseLine(currentStoryBranch.branch.script[i], i, currentStoryBranch.branch.branchName);
 					switch (info.type) {
@@ -802,6 +803,7 @@ namespace JBirdEngine {
 						else if (info.branch == -1) {
 							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch == null) {
 								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} has no parent! Cannot have option that jumps to parent branch.", currentStoryBranch.branch.branchName);
+                                parseRoutine = null;
 								yield break;
 							}
 							jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch;
@@ -809,6 +811,7 @@ namespace JBirdEngine {
 						else {
 							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
 								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
+                                parseRoutine = null;
 								yield break;
 							}
 							for (int j = 0; j < StoryBranchOrganizer.singleton.entries.Count; j++) {
@@ -831,6 +834,7 @@ namespace JBirdEngine {
 						else if (info.branch == -1) {
 							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch == null) {
 								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} has no parent! Cannot use '/jump_back' command.", currentStoryBranch.branch.branchName);
+                                parseRoutine = null;
 								yield break;
 							}
 							parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch));
@@ -838,6 +842,7 @@ namespace JBirdEngine {
 						else {
 							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
 								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
+                                parseRoutine = null;
 								yield break;
 							}
 							for (int j = 0; j < StoryBranchOrganizer.singleton.entries.Count; j++) {
@@ -980,12 +985,11 @@ namespace JBirdEngine {
 					}
 					return SetMood(tokens[1], lineNumber, branchName);
 				default:
-					//***FIX THIS***
 					Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid command '{0}' (branch {1}, line {2}).{3}Attempted to parse line: '{4}'.", command, branchName, lineNumber, System.Environment.NewLine, line);
 					return null;
 				}
-				Debug.LogErrorFormat("RenUnity.DialogueParser: Command '{0}' recognized, but not implemented (branch {1}, line {2}).", tokens[0], branchName, lineNumber);
-				return null;
+				//Debug.LogErrorFormat("RenUnity.DialogueParser: Command '{0}' recognized, but not implemented (branch {1}, line {2}).", tokens[0], branchName, lineNumber);
+				//return null;
 			}
 
 			private static ConditionalInfo HandleConditional (List<string> tokens, int startIndex, int lineNumber = -1, string branchName = "N/A") {
