@@ -10,6 +10,13 @@ public class TestScript : MonoBehaviour {
 	public JBirdEngine.ColorLibrary.ColorHelper.ColorHSV hsv;
 	public Markov.NameGenerator nameGenerator;
 
+	[Range(0f, 1f)]
+	public float luma;
+	[Range(0, 360)]
+	public int hue;
+
+	public Color lumaHue;
+
 	public JBirdEngine.ColorLibrary.MoreColors.BobRoss.ColorPalette bobRoss;
 
     enum TestEnum {
@@ -22,6 +29,10 @@ public class TestScript : MonoBehaviour {
         "thisisatest".ToEnum<TestEnum>();
 		DialogueParser.CommandInfo info = DialogueParser.ParseLine("/option if stat JohnCena Suspicion != 7 \"this is a message\" if flag butts 7 3");
 		Debug.Log(info);
+	}
+
+	void Update () {
+		lumaHue = JBirdEngine.ColorLibrary.ColorHelper.FromHueAndLuma(hue, luma);
 	}
 
 }
