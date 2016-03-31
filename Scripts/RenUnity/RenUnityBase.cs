@@ -47,7 +47,7 @@ namespace JBirdEngine {
 			}
 
 			void Start () {
-				DialogueParser.ParseBranch(StoryBranchOrganizer.singleton.entries[0].thisBranch);
+				//DialogueParser.ParseBranch(StoryBranchOrganizer.singleton.entries[0].thisBranch);
 			}
 
 			void Update () {
