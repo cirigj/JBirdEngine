@@ -4,6 +4,7 @@
 	{
 		_MainTex ("Texture", 2D) = "white" {}
 		_Hue ("Hue to not convert to greyscale", Range(0,359)) = 0
+		_Tolerance ("Number of hues around the current hue to accept", Range(0, 180)) = 0
 	}
 	SubShader
 	{
@@ -40,6 +41,7 @@
 			
 			sampler2D _MainTex;
 			int _Hue;
+			int _Tolerance;
 
 			fixed4 frag (v2f i) : SV_Target
 			{
@@ -63,11 +65,11 @@
 					hueInt += 360;
 				}
 				//don't adjust the color if it is the right hue
-				if (hueInt == _Hue) {
+				if (hueInt >= (_Hue - _Tolerance) % 360 && hueInt <= (_Hue + _Tolerance) % 360) {
 					return col;
 				}
 				//convert to greyscale on all other hues
-				int luma = r * 0.299f + g * 0.587f + b * 0.114f;
+				float luma = r * 0.299 + g * 0.587 + b * 0.114;
 				return float4 (luma, luma, luma, col.a);
 			}
 			ENDCG
