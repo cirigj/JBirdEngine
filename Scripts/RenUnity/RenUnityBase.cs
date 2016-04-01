@@ -318,6 +318,10 @@ namespace JBirdEngine {
 				if (!messageBox.isActiveAndEnabled) {
 					yield break;
 				}
+                if (DialogueParser.parseRoutine != null) {
+                    RenUnityBase.singleton.StopCoroutine(DialogueParser.parseRoutine);
+                    DialogueParser.parseRoutine = null;
+                }
 				messageBox.animator.SetTrigger("closeTrig");
 				yield return new WaitForSeconds(messageBox.animator.GetCurrentAnimatorStateInfo(0).length);
 				DialogueParser.ContinuePostAnimation();
@@ -819,6 +823,9 @@ namespace JBirdEngine {
 							info.branch = info.conditionalBranch;
 						}
 						StoryBranch jumpBranch;
+                        if (info.branch == -3) {
+                            break;
+                        }
 						if (info.branch == -2) {
 							jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch;
 						}
@@ -850,6 +857,9 @@ namespace JBirdEngine {
 						if (info.conditional != null && !info.conditional.Evaluate()) {
 							break;
 						}
+                        if (info.branch == -3) {
+                            break;
+                        }
 						if (info.branch == -2) {
 							parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch));
 						}
@@ -959,7 +969,7 @@ namespace JBirdEngine {
 					return Option(tokens, lineNumber, branchName);
 				case "jump":
 					if (tokens.Count != 2 && tokens.Count != 5 && tokens.Count != 8) {
-						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/jump' command (branch {0}, line {1}). Correct syntax is '/jump (conditional) [branchIndex]'.", branchName, lineNumber);
+						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/jump' command (branch {0}, line {1}). Correct syntax is '/jump [branchIndex] (conditional)'.", branchName, lineNumber);
 						return null;
 					}
 					return Jump(tokens, lineNumber, branchName);
@@ -1143,6 +1153,24 @@ namespace JBirdEngine {
 				return info;
 			}
 
+            private static int GetJumpBranchFromToken (string token, int lineNumber = -1, string branchName = "N/A") {
+                int branch;
+                if (token == "none") {
+                    return -3;
+                }
+                if (token == "this") {
+                    return -2;
+                }
+                if (token == "back") {
+                    return -1;
+                }
+                if (int.TryParse(token, out branch) && branch >= -3) {
+                    return branch;
+                }
+                Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid branch index '{0}' (branch {1}, line {2}).", token, branchName, lineNumber);
+                return -4;
+            }
+
 			private static CommandInfo Option (List<string> tokens, int lineNumber = -1, string branchName = "N/A") {
 				CommandInfo info = new CommandInfo();
 				info.type = CommandType.Option;
@@ -1206,9 +1234,8 @@ namespace JBirdEngine {
 					Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid arguments for '/option' command (branch {0}, line {1}). Proper syntax is '/option (availabilityConditional) \"[text]\" (conditional branchIndex) [branchIndex]'", branchName, lineNumber);
 					return null;
 				}
-				int branch;
-				if (!int.TryParse(tokens[parseIndex], out branch) || branch < -2) {
-					Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid branch index '{0}' (branch {1}, line {2}).", tokens[parseIndex], branchName, lineNumber);
+				int branch = GetJumpBranchFromToken(tokens[parseIndex], lineNumber, branchName);
+				if (branch <= -4) {
 					return null;
 				}
 				info.branch = branch;
@@ -1218,9 +1245,8 @@ namespace JBirdEngine {
 			private static CommandInfo Jump (List<string> tokens, int lineNumber = -1, string branchName = "N/A") {
 				CommandInfo info = new CommandInfo();
 				info.type = CommandType.Jump;
-				int branch;
-				if (!int.TryParse(tokens[1], out branch) || branch < -2) {
-					Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid branch index '{0}' (branch {1}, line {2}).", tokens[1], branchName, lineNumber);
+				int branch = GetJumpBranchFromToken(tokens[1], lineNumber, branchName);
+				if (branch <= -4) {
 					return null;
 				}
 				info.branch = branch;
