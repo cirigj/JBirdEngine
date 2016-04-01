@@ -298,7 +298,7 @@ namespace JBirdEngine {
 
 			public static IEnumerator OpenMessageBox () {
 				messageBox.animator.SetTrigger("openTrig");
-				yield return new WaitForSeconds(messageBox.animator.GetCurrentAnimatorStateInfo(0).length * messageBox.animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
+				yield return new WaitForSeconds(messageBox.animator.GetCurrentAnimatorStateInfo(0).length);
 				DialogueParser.ContinuePostAnimation();
 				yield break;
 			}
@@ -323,10 +323,10 @@ namespace JBirdEngine {
 				DialogueParser.ContinuePostAnimation();
 				boxText.text = string.Empty;
 				if (messageBox != null) {
-					messageBox.SetActive(false);
+					//messageBox.SetActive(false);
 				}
-				boxText = null;
-				portraitImage = null;
+				//boxText = null;
+				//portraitImage = null;
 				currentCharacter = Character.InvalidName;
                 if (writingRoutine != null) {
                     RenUnityBase.singleton.StopCoroutine(writingRoutine);
@@ -351,7 +351,7 @@ namespace JBirdEngine {
 					}
 					messageBox.transform.SetParent(RenUnityBase.singleton.uiCanvas.transform, false);
 				}
-				messageBox.SetActive(true);
+				//messageBox.SetActive(true);
 				boxText = messageBox.messageTextBox;
 				portraitImage = messageBox.characterPortrait;
 				if (currentCharacter == Character.InvalidName) {
@@ -810,7 +810,7 @@ namespace JBirdEngine {
 						while (waitingForAnim) {
 							yield return null;
 						}
-						break;
+						yield break;
 					case CommandType.Option:
 						if (info.availability != null && !info.availability.Evaluate()) {
 							break;
