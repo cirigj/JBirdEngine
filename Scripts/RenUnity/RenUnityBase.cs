@@ -319,7 +319,7 @@ namespace JBirdEngine {
 					yield break;
 				}
 				messageBox.animator.SetTrigger("closeTrig");
-				yield return new WaitForSeconds(messageBox.animator.GetCurrentAnimatorStateInfo(0).length * messageBox.animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
+				yield return new WaitForSeconds(messageBox.animator.GetCurrentAnimatorStateInfo(0).length);
 				DialogueParser.ContinuePostAnimation();
 				boxText.text = string.Empty;
 				if (messageBox != null) {
@@ -328,6 +328,9 @@ namespace JBirdEngine {
 				boxText = null;
 				portraitImage = null;
 				currentCharacter = Character.InvalidName;
+                if (writingRoutine != null) {
+                    RenUnityBase.singleton.StopCoroutine(writingRoutine);
+                }
 				yield break;
 			}
 
@@ -504,8 +507,21 @@ namespace JBirdEngine {
 				if (DialogueParser.parseRoutine != null) {
 					RenUnityBase.singleton.StopCoroutine(parseRoutine);
 				}
-				parseRoutine = RenUnityBase.singleton.StartCoroutine(DialogueParser.ParseDialogue(branch));
+                if (!waitingForAnim) {
+                    parseRoutine = RenUnityBase.singleton.StartCoroutine(DialogueParser.ParseDialogue(branch));
+                }
+                else {
+                    RenUnityBase.singleton.StartCoroutine(ParseAfterAnim(branch));
+                }
 			}
+
+            static IEnumerator ParseAfterAnim (StoryBranch branch) {
+                while (waitingForAnim) {
+                    yield return null;
+                }
+                parseRoutine = RenUnityBase.singleton.StartCoroutine(DialogueParser.ParseDialogue(branch));
+                yield break;
+            }
 
 			public static void ContinueParsingScript () {
 				if (waitingForInput) {
@@ -529,6 +545,7 @@ namespace JBirdEngine {
 				SetStat,
 				SetMood,
 				Wait,
+                Ignore,
 			}
 
 			public enum ConditionalType {
@@ -887,6 +904,8 @@ namespace JBirdEngine {
 							}
 						}
 						break;
+                    case CommandType.Ignore:
+                        break;
 					}
 				}
 				parseRoutine = null;
@@ -915,7 +934,8 @@ namespace JBirdEngine {
 				}
 				List<string> tokens = line.Tokenize(' ', '/');
 				if (tokens.Count == 0) {
-					return null;
+					info.type = CommandType.Ignore;
+                    return info;
 				}
 				string command = tokens[0];
 				switch (command) {
