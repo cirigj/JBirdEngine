@@ -9,6 +9,26 @@ using System.Collections.Generic;
 
 namespace JBirdEngine {
 
+    /// <summary>
+    /// Helpful math functions that don't exist in base UnityEngine.
+    /// </summary>
+    public static class MathHelper {
+
+        /// <summary>
+        /// Returns n raised to the p power.
+        /// </summary>
+        /// <param name="n">Base.</param>
+        /// <param name="p">Power.</param>
+        /// <returns>n to the p</returns>
+        public static int IntPow (int n, int p) {
+            if (p == 0) {
+                return 1;
+            }
+            return n * IntPow(n, p - 1);
+        }
+
+    }
+
 	/// <summary>
 	/// Contains extension methods for Unity base functionality.
 	/// </summary>
