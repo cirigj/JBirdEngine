@@ -391,15 +391,121 @@ namespace JBirdEngine {
 				writingRoutine = RenUnityBase.singleton.StartCoroutine(UpdateMessage(message));
 			}
 
-			public static IEnumerator UpdateMessage (string message) {
+            public class htmlTag {
+
+                public string str;
+                public int index;
+                public bool active;
+                public char type;
+
+                public htmlTag (string s, int i, char c) {
+                    str = s;
+                    index = i;
+                    active = false;
+                    type = c;
+                }
+
+            }
+
+            public class HtmlTagList {
+
+                public List<htmlTag> tags;
+
+                public HtmlTagList () {
+                    tags = new List<htmlTag>();
+                }
+
+                public string ConcatTags () {
+                    string buffer = string.Empty;
+                    for (int i = 0; i < tags.Count; i++) {
+                        if (tags[i].active) {
+                            buffer = string.Concat(buffer, tags[i].str);
+                        }
+                    }
+                    return buffer;
+                }
+
+                public htmlTag GetFirstTagOfType (char c) {
+                    if (c == 'q') {
+                        return null;
+                    }
+                    for (int i = 0; i < tags.Count; i++) {
+                        if (tags[i].type == c && !tags[i].active) {
+                            return tags[i];
+                        }
+                    }
+                    Debug.LogError("RenUnity.DialogueBoxHandler: Missing an html end tag!");
+                    return null;
+                }
+
+            }
+
+			public static IEnumerator UpdateMessage (string messageRaw) {
 				if (boxText == null) {
 					Debug.LogErrorFormat("RenUnity.DialogueBoxHandler: No text box to write to! Make sure to use '/start_talk' command before attempting to display dialogue.");
 					yield break;
 				}
 				boxText.text = string.Empty;
-				writingDialogue = true;
+                string messageHead = string.Empty;
+                HtmlTagList htmlEndTags = new HtmlTagList();
+                HtmlTagList htmlStartTags = new HtmlTagList();
+                //Parse once to remove and store indices of html tags
+                string message = string.Empty;
+                int tagCharacterCount = 0;
+                for (int i = 0; i < messageRaw.Length; i++) {
+                    if (messageRaw[i] == '<') {
+                        if (messageRaw[i + 1] == '/') {
+                            htmlEndTags.tags.Add(new htmlTag(string.Empty, i - tagCharacterCount, messageRaw[i + 2]));
+                            while (messageRaw[i] != '>') {
+                                htmlEndTags.tags[htmlEndTags.tags.Count - 1].str = string.Concat(htmlEndTags.tags[htmlEndTags.tags.Count - 1].str, messageRaw[i]);
+                                tagCharacterCount++;
+                                i++;
+                            }
+                            htmlEndTags.tags[htmlEndTags.tags.Count - 1].str = string.Concat(htmlEndTags.tags[htmlEndTags.tags.Count - 1].str, ">");
+                            tagCharacterCount++;
+                        }
+                        else {
+                            htmlStartTags.tags.Add(new htmlTag(string.Empty, i - tagCharacterCount, messageRaw[i + 1]));
+                            while (messageRaw[i] != '>') {
+                                htmlStartTags.tags[htmlStartTags.tags.Count - 1].str = string.Concat(htmlStartTags.tags[htmlStartTags.tags.Count - 1].str, messageRaw[i]);
+                                tagCharacterCount++;
+                                i++;
+                            }
+                            htmlStartTags.tags[htmlStartTags.tags.Count - 1].str = string.Concat(htmlStartTags.tags[htmlStartTags.tags.Count - 1].str, ">");
+                            tagCharacterCount++;
+                        }
+                    }
+                    else {
+                        message = string.Concat(message, messageRaw[i]);
+                    }
+                }
+                /////////////////////////////////////////////////////
+                int startTagIndex = 0;
+                int endTagIndex = 0;
+                writingDialogue = true;
 				float snapshotWriteSpeed = writeSpeed;
+                bool instantWrite = false;
 				for (int i = 0; i < message.Length; i++) {
+                    //insert tags
+                    if (startTagIndex < htmlStartTags.tags.Count) {
+                        if (i == htmlStartTags.tags[startTagIndex].index) {
+                            if (htmlStartTags.tags[startTagIndex].type == 'q') {
+                                htmlEndTags.GetFirstTagOfType(htmlStartTags.tags[startTagIndex].type).active = true;
+                            }
+                            messageHead = string.Concat(messageHead, htmlStartTags.tags[startTagIndex].str);
+                            startTagIndex++;
+                            i--;
+                            continue;
+                        }
+                    }
+                    if (endTagIndex < htmlEndTags.tags.Count) {
+                        if (i == htmlEndTags.tags[endTagIndex].index) {
+                            messageHead = string.Concat(messageHead, htmlEndTags.tags[endTagIndex].str);
+                            htmlEndTags.tags.RemoveAt(endTagIndex);
+                            i--;
+                            continue;
+                        }
+                    }
 					//special characters
 					if (message[i] == '#') {
 						i++;
@@ -409,46 +515,48 @@ namespace JBirdEngine {
 							}
 						}
 						else if (message[i] == 'b') {
-							boxText.text = boxText.text.Substring(0, boxText.text.Length - 1);
-							if (!skipDialogue) {
+                            messageHead = messageHead.Substring(0, messageHead.Length - 1);
+							if (!skipDialogue && !instantWrite) {
 								yield return new WaitForSeconds(snapshotWriteSpeed);
 							}
 						}
 						else if (message[i] == 'h') {
 							snapshotWriteSpeed = 2f * writeSpeed;
+                            instantWrite = false;
 						}
 						else if (message[i] == 'd') {
 							snapshotWriteSpeed = 0.5f * writeSpeed;
+                            instantWrite = false;
 						}
 						else if (message[i] == 'q') {
 							snapshotWriteSpeed = 4f * writeSpeed;
+                            instantWrite = false;
 						}
 						else if (message[i] == 'f') {
 							snapshotWriteSpeed = 0.25f * writeSpeed;
+                            instantWrite = false;
 						}
 						else if (message[i] == 'r') {
 							snapshotWriteSpeed = writeSpeed;
+                            instantWrite = false;
 						}
 						else if (message[i] == 'i') {
-							i++;
-							while (i < message.Length && message[i] != '#') {
-								boxText.text = string.Concat(boxText.text, message[i]);
-								i++;
-							}
+                            instantWrite = true;
 						}
                         else if (message[i] == '#') {
-                            boxText.text = string.Concat(boxText.text, message[i]);
-                            if (!skipDialogue) {
+                            messageHead = string.Concat(messageHead, message[i]);
+                            if (!skipDialogue && !instantWrite) {
                                 yield return new WaitForSeconds(snapshotWriteSpeed);
                             }
                         }
 					}
 					else {
-						boxText.text = string.Concat(boxText.text, message[i]);
-						if (!skipDialogue) {
+                        messageHead = string.Concat(messageHead, message[i]);
+						if (!skipDialogue && !instantWrite) {
 							yield return new WaitForSeconds(snapshotWriteSpeed);
 						}
 					}
+                    boxText.text = string.Concat(messageHead, htmlEndTags.ConcatTags());
 				}
 				skipDialogue = false;
 				writingDialogue = false;
