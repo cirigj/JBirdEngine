@@ -324,7 +324,7 @@ Animator:
   m_GameObject: {fileID: 178500}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 457a4cda454d0d54f856f854b5bc739e, type: 2}
+  m_Controller: {fileID: 9100000, guid: ea7a25e3c84ae6649b53d4c0e4464304, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -437,7 +437,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 127416}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a7a4c08ae81cf384a86dac1ad79945db, type: 3}
+  m_Script: {fileID: 11500000, guid: ec446c8b1bcb81d45a574e71b4666405, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   textBox: {fileID: 11424076}
@@ -452,7 +452,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 113756}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a7a4c08ae81cf384a86dac1ad79945db, type: 3}
+  m_Script: {fileID: 11500000, guid: ec446c8b1bcb81d45a574e71b4666405, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   textBox: {fileID: 11431710}
@@ -890,7 +890,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 185246}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a7a4c08ae81cf384a86dac1ad79945db, type: 3}
+  m_Script: {fileID: 11500000, guid: ec446c8b1bcb81d45a574e71b4666405, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   textBox: {fileID: 11479002}
@@ -1069,7 +1069,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 141234}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a7a4c08ae81cf384a86dac1ad79945db, type: 3}
+  m_Script: {fileID: 11500000, guid: ec446c8b1bcb81d45a574e71b4666405, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   textBox: {fileID: 11442284}
@@ -1138,7 +1138,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 178500}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4e9d6ead3b9b7b4593e0ed25d48b2b0, type: 3}
+  m_Script: {fileID: 11500000, guid: 9e457d4b938df0740a3e358381d57c00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   messageTextBox: {fileID: 11448854}
@@ -1149,7 +1149,7 @@ MonoBehaviour:
   - {fileID: 11489726}
   - {fileID: 11412552}
   - {fileID: 11418420}
-  animator: {fileID: 0}
+  animator: {fileID: 9590804}
 --- !u!222 &22208238
 CanvasRenderer:
   m_ObjectHideFlags: 1
@@ -1289,11 +1289,11 @@ RectTransform:
   - {fileID: 22498432}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_SizeDelta: {x: 0, y: 449}
+  m_Pivot: {x: 0.5, y: 0}
 --- !u!224 &22419266
 RectTransform:
   m_ObjectHideFlags: 1
