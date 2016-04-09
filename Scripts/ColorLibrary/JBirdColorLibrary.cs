@@ -559,6 +559,37 @@ namespace JBirdEngine {
 				return new ColorHSV((int)hue, sat, val, color.a);
             }
 
+            /// <summary>
+            /// Get the hue from an RGB color without converting to HSV.
+            /// </summary>
+            /// <param name="color">Color to get the hue from.</param>
+            /// <returns>The hue of the given color.</returns>
+            public static int GetHue (this Color color) {
+                float hue;
+                float cMax = Mathf.Max(color.r, color.g, color.b);
+                float cMin = Mathf.Min(color.r, color.g, color.b);
+                float delta = cMax - cMin;
+                //HUE
+                if (delta == 0f) {
+                    hue = 0;
+                }
+                else if (cMax == color.r) {
+                    hue = ((color.g - color.b)) / delta;
+                }
+                else if (cMax == color.g) {
+                    hue = 2 + (color.b - color.r) / delta;
+                }
+                else {
+                    hue = 4 + (color.r - color.g) / delta;
+                }
+                //Convert to degrees
+                hue *= 60f;
+                if (hue < 0f) {
+                    hue += 360f;
+                }
+                return (int)hue;
+            }
+
             public static Color ToColor (this ColorHSV colorHSV) {
                 float c = colorHSV.v * colorHSV.s;
                 float x = c * (1f - Mathf.Abs((colorHSV.h / 60f) % 2 - 1));
