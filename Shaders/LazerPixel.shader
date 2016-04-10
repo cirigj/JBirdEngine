@@ -7,6 +7,7 @@
 		_Height ("Height", float) = 0
 		_PixelScale ("Pixel Scale", int) = 0
 		_Checkering ("Checkering", float) = .05
+		_Mode ("Color Palette Mode", int) = 0
 	}
 	SubShader
 	{
@@ -46,6 +47,7 @@
 			float _Height;
 			int _PixelScale;
 			float _Checkering;
+			int _Mode;
 
 			fixed4 frag (v2f i) : SV_Target
 			{
@@ -87,20 +89,55 @@
 				float s = (maxC - minC) / maxC;
 				float v = maxC;
 
-				//adjust hue
-				hue = round(hue / 30) * 30;
+				//51-color mode
+				if (_Mode == 0) {
 
-				//adjust saturation
-				if ((int)pixelX % 2 == (int)pixelY % 2) {
-					s -= _Checkering;
-				}
-				s = round(s * 2) / 2;
+					//adjust hue
+					hue = round(hue / 30) * 30;
 
-				//adjust value
-				if ((int)pixelX % 2 == (int)pixelY % 2) {
-					v -= _Checkering;
+					//adjust saturation
+					if ((int)pixelX % 2 == (int)pixelY % 2) {
+						s -= _Checkering;
+					}
+					s = round(s * 2) / 2;
+
+					//adjust value
+					if ((int)pixelX % 2 == (int)pixelY % 2) {
+						v -= _Checkering;
+					}
+					v = round(v * 2) / 2;
+
 				}
-				v = round(v * 2) / 2;
+
+				// A E S T H E T I C  M O D E
+				else if (_Mode == 1) {
+
+					//adjust hue
+					int closestMargin = 360;
+					int closestHue = 0;
+					int hues[14] = {27, 51, 127, 157, 181, 182, 224, 225, 228, 269, 294, 316, 327, 348};
+					for (int i = 0; i < 14; i++) {
+						int margin = abs(hue - hues[i]);
+						if (margin < closestMargin) {
+							closestMargin = margin;
+							closestHue = hues[i];
+						}
+					}
+					hue = closestHue;
+
+					//adjust saturation
+					if ((int)pixelX % 2 == (int)pixelY % 2) {
+						s -= _Checkering;
+					}
+					s = clamp(round(s * 2) / 3 + .1, 0, 1);
+
+					//adjust value
+					if ((int)pixelX % 2 == (int)pixelY % 2) {
+						v -= _Checkering;
+					}
+					v = clamp(round(v * 3) / 4 + .6, 0, 1);
+
+				}
 
 				//convert to RGB
 				float R = saturate(abs((hue / 360) * 6 - 3) - 1);

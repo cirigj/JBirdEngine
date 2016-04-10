@@ -36,6 +36,7 @@ public class TestScript : MonoBehaviour {
 
 	void Update () {
 		lumaChromaColor = JBirdEngine.ColorLibrary.ColorHelper.FromChromaAndLuma(hue, saturation, luma);
+		Debug.Log(JBirdEngine.ColorLibrary.ColorHelper.GetLuma(JBirdEngine.ColorLibrary.MoreColors.Vaporwave.EnumToColor(vaporwave)));
 	}
 
 }
