@@ -8,6 +8,7 @@
 		_PixelScale ("Pixel Scale", int) = 0
 		_Checkering ("Checkering", float) = .05
 		_Mode ("Color Palette Mode", int) = 0
+		_SatCorrect ("Saturation Correction", float) = 0
 	}
 	SubShader
 	{
@@ -48,6 +49,7 @@
 			int _PixelScale;
 			float _Checkering;
 			int _Mode;
+			float _SatCorrect;
 
 			fixed4 frag (v2f i) : SV_Target
 			{
@@ -99,13 +101,22 @@
 					if ((int)pixelX % 2 == (int)pixelY % 2) {
 						s -= _Checkering;
 					}
-					s = round(s * 2) / 2;
+					s = round((s + _SatCorrect) * 2) / 2;
 
 					//adjust value
 					if ((int)pixelX % 2 == (int)pixelY % 2) {
 						v -= _Checkering;
 					}
 					v = round(v * 2) / 2;
+
+					//convert to RGB
+					float R = saturate(abs((hue / 360) * 6 - 3) - 1);
+					float G = saturate(2 - abs((hue / 360) * 6 - 2));
+					float B = saturate(2 - abs((hue / 360) * 6 - 4));
+					float3 hueRGB = float3(R,G,B);
+					float4 endColor = float4(((hueRGB - 1) * s + 1) * v, 1.0);
+
+					return endColor;
 
 				}
 
@@ -129,7 +140,7 @@
 					if ((int)pixelX % 2 == (int)pixelY % 2) {
 						s -= _Checkering;
 					}
-					s = clamp(round(s * 2) / 3 + .1, 0, 1);
+					s = clamp(round((s + _SatCorrect) * 2) / 3 + .1, 0, 1);
 
 					//adjust value
 					if ((int)pixelX % 2 == (int)pixelY % 2) {
@@ -137,23 +148,215 @@
 					}
 					v = clamp(round(v * 3) / 4 + .6, 0, 1);
 
+					//convert to RGB
+					float R = saturate(abs((hue / 360) * 6 - 3) - 1);
+					float G = saturate(2 - abs((hue / 360) * 6 - 2));
+					float B = saturate(2 - abs((hue / 360) * 6 - 4));
+					float3 hueRGB = float3(R,G,B);
+					float4 endColor = float4(((hueRGB - 1) * s + 1) * v, 1.0);
+
+					return endColor;
+
 				}
 
-				//convert to RGB
-				float R = saturate(abs((hue / 360) * 6 - 3) - 1);
-				float G = saturate(2 - abs((hue / 360) * 6 - 2));
-				float B = saturate(2 - abs((hue / 360) * 6 - 4));
-				float3 hueRGB = float3(R,G,B);
-				float4 endColor = float4(((hueRGB - 1) * s + 1) * v, 1.0);
+				//NES Emulation mode
+				if (_Mode == 2) {
 
-				//get luma
-				float luma = r * 0.299 + g * 0.587 + b * 0.114;
-				float clampedLuma = round(luma * 4) / 4;
+					//adjust hue
+					hue = round(hue / 30) * 30;
 
-				//fixed4 col = fixed4(clampedLuma, clampedLuma, clampedLuma, 1.0);
-				//return col;
+					//adjust saturation
+					if ((int)pixelX % 2 == (int)pixelY % 2) {
+						s -= _Checkering;
+					}
+					s = clamp(round(s + _SatCorrect), 0, 1);
 
-				return endColor;
+					//get luma
+					float luma = r * 0.299 + g * 0.587 + b * 0.114;
+					if ((int)pixelX % 2 == (int)pixelY % 2) {
+						luma -= _Checkering;
+					}
+					luma = clamp(round(luma * 5) / 5, 0, 1);
+
+                    float rVal = 0.299;
+                    float gVal = 0.587;
+                    float bVal = 0.114;
+
+                    float red = 0;
+                    float green = 0;
+                    float blue = 0;
+
+                    switch (hue) {
+                    case 0: //red
+                        if (luma > rVal) {
+                            red = 1;
+                            green = blue = (luma - rVal) / (gVal + bVal);
+                        }
+                        else {
+                            red = (luma / rVal);
+                            green = blue = 0;
+                        }
+                        break;
+                    case 60: //yellow
+                        if (luma > rVal + gVal) {
+                            red = green = 1;
+                            blue = (luma - rVal - gVal) / bVal;
+                        }
+                        else {
+                            red = green = (luma / (rVal + gVal));
+                            blue = 0;
+                        }
+                        break;
+                    case 120: //green
+                        if (luma > gVal) {
+                            green = 1;
+                            red = blue = (luma - gVal) / (rVal + bVal);
+                        }
+                        else {
+                            green = (luma / gVal);
+                            red = blue = 0;
+                        }
+                        break;
+                    case 180: //cyan
+                        if (luma > gVal + bVal) {
+                            green = blue = 1;
+                            red = (luma - gVal - bVal) / rVal;
+                        }
+                        else {
+                            green = blue = (luma / (gVal + bVal));
+                            red = 0;
+                        }
+                        break;
+                    case 240: //blue
+                        if (luma > bVal) {
+                            blue = 1;
+                            red = green = (luma - bVal) / (rVal + gVal);
+                        }
+                        else {
+                            blue = (luma / bVal);
+                            red = green = 0;
+                        }
+                        break;
+                    case 300: //magenta
+                        if (luma > rVal + bVal) {
+                            red = blue = 1;
+                            green = (luma - rVal - bVal) / gVal;
+                        }
+                        else {
+                            red = blue = (luma / (rVal + bVal));
+                            green = 0;
+                        }
+                        break;
+                    default:
+                        float fHue = (float)hue;
+                        if (hue > 0 && hue < 60) { //between red and yellow
+                            float huePercentage = (60 / (fHue - 0));
+                            float xVal = (rVal * huePercentage + gVal);
+                            float x = luma / xVal;
+                            red = x * huePercentage;
+                            green = x;
+                            blue = 0;
+                            if (red > 1) {
+                                red = 1;
+                                green = 1 / huePercentage;
+                                float yVal = (gVal * (1 - green) + bVal);
+                                float y = (luma - rVal - gVal * green) / yVal;
+                                green += y * (1 - (1 / huePercentage));
+                                blue = y;
+                            }
+                        }
+                        else if (hue > 60 && hue < 120) { //between yellow and green
+                            float huePercentage = (60 / (120 - fHue));
+                            float xVal = (gVal * huePercentage + rVal);
+                            float x = luma / xVal;
+                            green = x * huePercentage;
+                            red = x;
+                            blue = 0;
+                            if (green > 1) {
+                                green = 1;
+                                red = 1 / huePercentage;
+                                float yVal = (rVal * (1 - red) + bVal);
+                                float y = (luma - gVal - rVal * red) / yVal;
+                                red += y * (1 - (1 / huePercentage));
+                                blue = y;
+                            }
+                        }
+                        else if (hue > 120 && hue < 180) { //between green and cyan
+                            float huePercentage = (60 / (fHue - 120));
+                            float xVal = (gVal * huePercentage + bVal);
+                            float x = luma / xVal;
+                            green = x * huePercentage;
+                            blue = x;
+                            red = 0;
+                            if (green > 1) {
+                                green = 1;
+                                blue = 1 / huePercentage;
+                                float yVal = (bVal * (1 - blue) + rVal);
+                                float y = (luma - gVal - bVal * blue) / yVal;
+                                blue += y * (1 - (1 / huePercentage));
+                                red = y;
+                            }
+                        }
+                        else if (hue > 180 && hue < 240) { //between cyan and blue
+                            float huePercentage = (60 / (240 - fHue));
+                            float xVal = (bVal * huePercentage + gVal);
+                            float x = luma / xVal;
+                            blue = x * huePercentage;
+                            green = x;
+                            red = 0;
+                            if (blue > 1) {
+                                blue = 1;
+                                green = 1 / huePercentage;
+                                float yVal = (gVal * (1 - green) + rVal);
+                                float y = (luma - bVal - gVal * green) / yVal;
+                                green += y * (1 - (1 / huePercentage));
+                                red = y;
+                            }
+                        }
+                        else if (hue > 240 && hue < 300) { //between blue and magenta
+                            float huePercentage = (60 / (fHue - 240));
+                            float xVal = (bVal * huePercentage + rVal);
+                            float x = luma / xVal;
+                            blue = x * huePercentage;
+                            red = x;
+                            green = 0;
+                            if (blue > 1) {
+                                blue = 1;
+                                red = 1 / huePercentage;
+                                float yVal = (rVal * (1 - red) + gVal);
+                                float y = (luma - bVal - rVal * red) / yVal;
+                                red += y * (1 - (1 / huePercentage));
+                                green = y;
+                            }
+                        }
+                        else if (hue > 300 && hue < 360) { //between magenta and red
+                            float huePercentage = (60 / (360 - fHue));
+                            float xVal = (rVal * huePercentage + bVal);
+                            float x = luma / xVal;
+                            red = x * huePercentage;
+                            blue = x;
+                            green = 0;
+                            if (red > 1) {
+                                red = 1;
+                                blue = 1 / huePercentage;
+                                float yVal = (bVal * (1 - blue) + gVal);
+                                float y = (luma - rVal - bVal * blue) / yVal;
+                                blue += y * (1 - (1 / huePercentage));
+                                green = y;
+                            }
+                        }
+                        break;
+                    }
+                    if (s == 0) {
+                        return fixed4 (luma, luma, luma, 1.0);
+                    }
+                    else {
+                        return fixed4(red, green, blue, 1.0);
+                    }
+
+                }
+                return fixed4(1,1,1,1);
+                
 			}
 			ENDCG
 		}
