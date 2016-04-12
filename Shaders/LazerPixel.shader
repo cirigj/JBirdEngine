@@ -9,6 +9,10 @@
 		_Checkering ("Checkering", float) = .05
 		_Mode ("Color Palette Mode", int) = 0
 		_SatCorrect ("Saturation Correction", float) = 0
+		_CustomPalette ("CustomPalette", 3D) = "white" {}
+		_TexSize ("Texture Size", int) = 0
+		_Scale ("LUT Scale", float) = 0
+		_Offset ("LUT Offset", float) = 0
 	}
 	SubShader
 	{
@@ -50,6 +54,10 @@
 			float _Checkering;
 			int _Mode;
 			float _SatCorrect;
+			sampler3D _CustomPalette;
+			int _TexSize;
+			float _Scale;
+			float _Offset;
 
 			fixed4 frag (v2f i) : SV_Target
 			{
@@ -85,6 +93,9 @@
 				hue *= 60;
 				if (hue < 0) {
 					hue += 360;
+				}
+				if (hue >= 360) {
+					hue -= 360;
 				}
 
 				//other HSV stuff
@@ -164,6 +175,9 @@
 
 					//adjust hue
 					hue = round(hue / 30) * 30;
+					if (hue >= 360) {
+						hue -= 360;
+					}
 
 					//adjust saturation
 					if ((int)pixelX % 2 == (int)pixelY % 2) {
@@ -355,6 +369,18 @@
                     }
 
                 }
+
+				//custom palette
+				if (_Mode == 3) {
+					if ((int)pixelX % 2 == (int)pixelY % 2) {
+						col.rgb += _Checkering;
+					}
+					col.rgb = sqrt(col.rgb);
+					col.rgb = tex3D(_CustomPalette, col.rgb * _Scale + _Offset).rgb;
+					col.rgb = col.rgb*col.rgb; 
+					return col;
+				}
+
                 return fixed4(1,1,1,1);
                 
 			}
