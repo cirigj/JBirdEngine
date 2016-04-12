@@ -74,7 +74,6 @@ public class LazerPixel : MonoBehaviour {
 
     public void GenerateTex3D () {
         ClampToAcceptableSize();
-        texColors = new List<Color>();
         paletteTexture = new Texture3D(texSize, texSize, texSize, TextureFormat.ARGB32, true);
         Color[] colors = new Color[texSize * texSize * texSize];
         float colorStep = 1.0f / (texSize);
