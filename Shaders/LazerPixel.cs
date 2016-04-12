@@ -10,6 +10,7 @@ public class LazerPixel : MonoBehaviour {
 		YoAesthetic,
 		NESEmulation,
         CustomPalette,
+        GBAGrayscaleRamp,
 	}
 
     public enum ClampMode {
@@ -30,6 +31,11 @@ public class LazerPixel : MonoBehaviour {
     public Texture3D paletteTexture;
     public int texSize;
     public ClampMode clampMode;
+    [Header("GBA Color Ramp Specs:")]
+    public Color color1 = new Color(0f, 0f, 0f, 1f);
+    public Color color2 = new Color(.333f, .333f, .333f, 1f);
+    public Color color3 = new Color(.667f, .667f, .667f, 1f);
+    public Color color4 = new Color(1f, 1f, 1f, 1f);
 
     void Awake () {
         material = new Material(Shader.Find("Hidden/LazerPixel"));
@@ -47,6 +53,10 @@ public class LazerPixel : MonoBehaviour {
         paletteTexture.wrapMode = TextureWrapMode.Clamp;
         material.SetFloat("_Scale", (paletteTexture.width - 1) / (1.0f * paletteTexture.width));
         material.SetFloat("_Offset", 1.0f / (2.0f * paletteTexture.width));
+        material.SetColor("_GBAColor1", color1);
+        material.SetColor("_GBAColor2", color2);
+        material.SetColor("_GBAColor3", color3);
+        material.SetColor("_GBAColor4", color4);
         Graphics.Blit(source, destination, material);
     }
 

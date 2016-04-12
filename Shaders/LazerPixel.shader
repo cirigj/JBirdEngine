@@ -13,6 +13,10 @@
 		_TexSize ("Texture Size", int) = 0
 		_Scale ("LUT Scale", float) = 0
 		_Offset ("LUT Offset", float) = 0
+		_GBAColor1 ("GBA Color 1", Color) = (0,0,0,1)
+		_GBAColor2 ("GBA Color 2", Color) = (.33,.33,.33,1)
+		_GBAColor3 ("GBA Color 3", Color) = (.67,.67,.67,1)
+		_GBAColor4 ("GBA Color 4", Color) = (1,1,1,1)
 	}
 	SubShader
 	{
@@ -58,6 +62,10 @@
 			int _TexSize;
 			float _Scale;
 			float _Offset;
+			float4 _GBAColor1;
+			float4 _GBAColor2;
+			float4 _GBAColor3;
+			float4 _GBAColor4;
 
 			fixed4 frag (v2f i) : SV_Target
 			{
@@ -379,6 +387,29 @@
 					col.rgb = tex3D(_CustomPalette, col.rgb * _Scale + _Offset).rgb;
 					col.rgb = col.rgb*col.rgb; 
 					return col;
+				}
+
+				//grayscale ramp
+				if (_Mode == 4) {
+					float luma = r * 0.299 + g * 0.587 + b * 0.114;
+					if ((int)pixelX % 2 == (int)pixelY % 2) {
+						luma -= _Checkering;
+					}
+					//luma = clamp(round(luma * 3) / 3, 0, 1);
+					//return fixed4 (luma, luma, luma, 1.0);
+					if (luma <= .25) {
+						return _GBAColor1;
+					}
+					else if (luma <= .5) {
+						return _GBAColor2;
+					}
+					else if (luma <= .75) {
+						return _GBAColor3;
+					}
+					else {
+						return _GBAColor4;
+					}
+
 				}
 
                 return fixed4(1,1,1,1);
