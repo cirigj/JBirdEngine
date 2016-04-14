@@ -36,7 +36,7 @@ namespace JBirdEngine {
             /// </summary>
             /// <typeparam name="T">Type of the class that uses the ITrackableData<D> interface.</typeparam>
             /// <typeparam name="D">Type of the data to be tracked.</typeparam>
-            protected class History<T, D> {
+			protected class History<T, D> where T : UnityEngine.Object, ITrackableData<D> {
 
                 public T trackedItem;
                 private List<D> _history;

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using JBirdEngine;
 using JBirdEngine.RenUnity;
+using JBirdEngine.ColorLibrary;
 
 public class TestScript : MonoBehaviour {
 
@@ -37,6 +38,7 @@ public class TestScript : MonoBehaviour {
 	void Update () {
 		lumaChromaColor = JBirdEngine.ColorLibrary.ColorHelper.FromChromaAndLuma(hue, saturation, luma);
 		Debug.Log(JBirdEngine.ColorLibrary.ColorHelper.GetLuma(JBirdEngine.ColorLibrary.MoreColors.Vaporwave.EnumToColor(vaporwave)));
+		lumaChromaColor = (Color)(new ColorHelper.ColorHSV(Color.red));
 	}
 
 }

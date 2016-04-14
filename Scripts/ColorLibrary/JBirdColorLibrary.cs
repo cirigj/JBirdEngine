@@ -499,6 +499,47 @@ namespace JBirdEngine {
                     }
                 }
 
+				public ColorHSV (Color color) {
+					float hue = 0f;
+					float cMax = Mathf.Max(color.r, color.g, color.b);
+					float cMin = Mathf.Min(color.r, color.g, color.b);
+					float delta = cMax - cMin;
+					//HUE
+					if (delta == 0f) {
+						hue = 0;
+					}
+					else if (cMax == color.r) {
+						hue = ((color.g - color.b)) / delta;
+					}
+					else if (cMax == color.g) {
+						hue = 2 + (color.b - color.r) / delta;
+					}
+					else {
+						hue = 4 + (color.r - color.g) / delta;
+					}
+					//Convert to degrees
+					hue *= 60f;
+					if (hue < 0f) {
+						hue += 360f;
+					}
+					h = (int)hue;
+					//SATURATION
+					if (cMax == 0f) {
+						s = 0f;
+					}
+					else {
+						s = delta / cMax;
+					}
+					//VALUE
+					v = cMax;
+					//ALPHA
+					a = color.a;
+				}
+
+				public static explicit operator Color(ColorHSV hsv) {
+					return hsv.ToColor();
+				}
+
             }
 
 			/// <summary>
@@ -910,6 +951,9 @@ namespace JBirdEngine {
                 return rainbow;
             }
 
+			/// <summary>
+			/// Chroma class (encapsulates hue and saturation).
+			/// </summary>
 			public class Chroma {
 				
 				public int hue;
@@ -927,6 +971,12 @@ namespace JBirdEngine {
 
 			}
 
+			/// <summary>
+			/// Gets the luminance of a given color.
+			/// </summary>
+			/// <returns>Luminance of the given color.</returns>
+			/// <param name="color">Color.</param>
+			/// <param name="useBT709">Uses BT.709 instead of BT.601 if set to true.</param>
 			public static float GetLuma (this Color color, bool useBT709 = false) {
 				float rVal = 0.299f;
 				float gVal = 0.587f;
@@ -939,15 +989,23 @@ namespace JBirdEngine {
 				return color.r * rVal + color.g * gVal + color.b * bVal;
 			}
 
+			/// <summary>
+			/// Returns a color with the specified chroma and luma
+			/// </summary>
+			/// <returns>Color with the specified chroma and luma.</returns>
+			/// <param name="chroma">Chroma.</param>
+			/// <param name="luma">Luma.</param>
+			/// <param name="useBT709">Uses BT.709 instead of BT.601 if set to true.</param>
 			public static Color FromChromaAndLuma (Chroma chroma, float luma, bool useBT709 = false) {
 				return FromChromaAndLuma(chroma.hue, chroma.saturation, luma, useBT709);
 			}
 
 			/// <summary>
-			/// Returns a color with the specified hue and luma. Defaults to BT.601.
+			/// Returns a color with the specified hue, saturation, and luma. Defaults to BT.601.
 			/// </summary>
-			/// <returns>Color with the specified hue and luma.</returns>
+			/// <returns>Color with the specified hue, saturation, and luma.</returns>
 			/// <param name="hue">Hue.</param>
+			/// <param name="saturation">Saturation.</param>
 			/// <param name="luma">Luma.</param>
 			/// <param name="useBT709">Uses BT.709 instead of BT.601 if set to true.</param>
 			public static Color FromChromaAndLuma (int hue, float saturation, float luma, bool useBT709 = false) {
