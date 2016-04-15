@@ -58,6 +58,12 @@ namespace JBirdEngine {
 				}
 				assetFileName = EditorGUILayout.TextField("File to save to:", assetFileName);
 
+                EditorGUILayout.Space();
+                if (GUILayout.Button("Error Check")) {
+                    RenUnity.DialogueParser.PreParseBranch(editorTarget);
+                    EditorUtility.SetDirty(target);
+                    AssetDatabase.Refresh();
+                }
 			}
 
 		}
