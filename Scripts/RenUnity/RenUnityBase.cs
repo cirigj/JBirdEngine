@@ -866,7 +866,7 @@ namespace JBirdEngine {
 				CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value += value;
 			}
 
-            public static void PreParseBranch (StoryBranch currentStoryBranch) {
+            public static void PreParseBranch (StoryBranch currentStoryBranch, bool autoFix) {
                 bool errorsFound = false;
                 bool lastCommandWasMessage = false;
                 int numErrors = 0;
@@ -877,18 +877,80 @@ namespace JBirdEngine {
                         numErrors++;
                         continue;
                     }
-                    if (info.type == CommandType.Message) {
-                        if (lastCommandWasMessage) {
-                            currentStoryBranch.branch.script.Insert(i, "/wait");
-                            Debug.LogWarningFormat("RenUnity.DialogueParser: Pre-parsing found two consecutive messages at index {0}; automatically inserting /wait command.", i);
-                            lastCommandWasMessage = false;
+                    if (autoFix) {
+                        if (info.type == CommandType.Ignore) {
+                            continue;
+                        }
+                        if (info.type == CommandType.Message) {
+                            if (info.message.Length >= 10 && info.message.Substring(0, 10) == "start_talk") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a start_talk command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 9 && info.message.Substring(0, 9) == "stop_talk") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a stop_talk command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 4 && info.message.Substring(0, 4) == "jump") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a jump command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 6 && info.message.Substring(0, 6) == "option") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a option command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 9 && info.message.Substring(0, 9) == "jump_back") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a jump_back command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 8 && info.message.Substring(0, 8) == "set_flag") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a set_flag command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 8 && info.message.Substring(0, 8) == "set_stat") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a set_stat command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 4 && info.message.Substring(0, 4) == "wait") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a wait command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 4 && info.message.Substring(0, 4) == "mood") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a mood command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            if (!lastCommandWasMessage) {
+                                lastCommandWasMessage = true;
+                                continue;
+                            }
                         }
                         else {
-                            lastCommandWasMessage = true;
+                            lastCommandWasMessage = false;
                         }
-                    }
-                    else {
-                        lastCommandWasMessage = false;
+                        if (info.type == CommandType.Message || info.type == CommandType.Jump || info.type == CommandType.StartTalk) {
+                            if (lastCommandWasMessage) {
+                                currentStoryBranch.branch.script.Insert(i, "/wait");
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found message without following wait command at index {0}; automatically inserting wait command.", i);
+                                lastCommandWasMessage = false;
+                            }
+                        }
                     }
                 }
                 if (!errorsFound) {

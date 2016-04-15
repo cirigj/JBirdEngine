@@ -24,6 +24,8 @@ namespace JBirdEngine {
 			public string writeFileName = "Assets/JBirdEngine/RenUnity/Json/Untitled.txt";
 			public string assetFileName = "Assets/JBirdEngine/RenUnity/Branches/Untitled.asset";
 
+            bool autoFix = true;
+
 			public override void OnInspectorGUI () {
 
 				DrawDefaultInspector();
@@ -59,8 +61,9 @@ namespace JBirdEngine {
 				assetFileName = EditorGUILayout.TextField("File to save to:", assetFileName);
 
                 EditorGUILayout.Space();
+                autoFix = EditorGUILayout.Toggle("Autocorrect:", autoFix);
                 if (GUILayout.Button("Error Check")) {
-                    RenUnity.DialogueParser.PreParseBranch(editorTarget);
+                    RenUnity.DialogueParser.PreParseBranch(editorTarget, autoFix);
                     EditorUtility.SetDirty(target);
                     AssetDatabase.Refresh();
                 }
