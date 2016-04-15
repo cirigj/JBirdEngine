@@ -737,17 +737,50 @@ namespace JBirdEngine {
 				CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value += value;
 			}
 
-			private static IEnumerator ParseDialogue (StoryBranch currentStoryBranch) {
-				if (StoryBranchOrganizer.singleton == null) {
-					Debug.LogErrorFormat("RenUnity.DialogueParser: No StoryBranchOrganizer instance exists! Please create one somewhere in the Assets folder.");
+            public static void PreParseBranch (StoryBranch currentStoryBranch) {
+                bool errorsFound = false;
+                bool lastCommandWasMessage = false;
+                int numErrors = 0;
+                for (int i = 0; i < currentStoryBranch.branch.script.Count; i++) {
+					CommandInfo info = ParseLine(currentStoryBranch.branch.script[i], i, currentStoryBranch.branch.branchName);
+                    if (info == null) {
+                        errorsFound = true;
+                        numErrors++;
+                        continue;
+                    }
+                    if (info.type == CommandType.Message) {
+                        if (lastCommandWasMessage) {
+                            currentStoryBranch.branch.script.Insert(i, "/wait");
+                            Debug.LogWarningFormat("RenUnity.DialogueParser: Pre-parsing found two consecutive messages at index {0}; automatically inserting /wait command.", i);
+                            lastCommandWasMessage = false;
+                        }
+                        else {
+                            lastCommandWasMessage = true;
+                        }
+                    }
+                    else {
+                        lastCommandWasMessage = false;
+                    }
+                }
+                if (!errorsFound) {
+                    Debug.LogFormat("RenUnity.DialogueParser: Finished pre-parsing {0} lines - No syntax errors found.", currentStoryBranch.branch.script.Count);
+                }
+                else {
+                    Debug.LogErrorFormat("RenUnity.DialogueParser: Pre-parsing finished with {0} errors.", numErrors);
+                }
+            }
+
+			private static IEnumerator ParseDialogue (StoryBranch currentStoryBranch, bool preParse = false) {
+                if (StoryBranchOrganizer.singleton == null) {
+                    Debug.LogErrorFormat("RenUnity.DialogueParser: No StoryBranchOrganizer instance exists! Please create one somewhere in the Assets folder.");
                     parseRoutine = null;
-					yield break;
-				}
-				if (RenUnityBase.singleton == null) {
-					Debug.LogErrorFormat("RenUnity.DialogueParser: No RenUnityBase instance exists! Please make sure one is instantiated, and start this coroutine on 'RenUnityBase.singleton'.");
+                    yield break;
+                }
+                if (RenUnityBase.singleton == null) {
+                    Debug.LogErrorFormat("RenUnity.DialogueParser: No RenUnityBase instance exists! Please make sure one is instantiated, and start this coroutine on 'RenUnityBase.singleton'.");
                     parseRoutine = null;
-					yield break;
-				}
+                    yield break;
+                }
                 int branchIndex = -1;
                 bool useCache = false;
                 if (currentStoryBranch.cachedIndex < StoryBranchOrganizer.singleton.entries.Count && currentStoryBranch.cachedIndex >= 0) {
@@ -775,130 +808,130 @@ namespace JBirdEngine {
                 }
                 currentBranchIndex = branchIndex;
 				for (int i = 0; i < currentStoryBranch.branch.script.Count; i++) {
-					CommandInfo info = ParseLine(currentStoryBranch.branch.script[i], i, currentStoryBranch.branch.branchName);
-					switch (info.type) {
-					case CommandType.Message:
-						DialogueBoxHandler.DisplayMessage(info.message);
-						break;
-					case CommandType.StartTalk:
-						waitingForAnim = true;
-						DialogueBoxHandler.CharacterStartTalking(info.character, info.mood);
-						while (waitingForAnim) {
-							yield return null;
-						}
-						break;
-					case CommandType.StopTalk:
-						waitingForAnim = true;
-						DialogueBoxHandler.CharacterStopTalking();
-						while (waitingForAnim) {
-							yield return null;
-						}
-						break;
-					case CommandType.Option:
-						if (info.availability != null && !info.availability.Evaluate()) {
-							break;
-						}
-						if (info.conditional != null && info.conditional.Evaluate()) {
-							info.branch = info.conditionalBranch;
-						}
-						StoryBranch jumpBranch;
-						if (info.branch == -2) {
-							jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch;
-						}
-						else if (info.branch == -1) {
-							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch == null) {
-								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} has no parent! Cannot have option that jumps to parent branch.", currentStoryBranch.branch.branchName);
+				    CommandInfo info = ParseLine(currentStoryBranch.branch.script[i], i, currentStoryBranch.branch.branchName);
+                    switch (info.type) {
+                    case CommandType.Message:
+                        DialogueBoxHandler.DisplayMessage(info.message);
+                        break;
+                    case CommandType.StartTalk:
+                        waitingForAnim = true;
+                        DialogueBoxHandler.CharacterStartTalking(info.character, info.mood);
+                        while (waitingForAnim) {
+                            yield return null;
+                        }
+                        break;
+                    case CommandType.StopTalk:
+                        waitingForAnim = true;
+                        DialogueBoxHandler.CharacterStopTalking();
+                        while (waitingForAnim) {
+                            yield return null;
+                        }
+                        break;
+                    case CommandType.Option:
+                        if (info.availability != null && !info.availability.Evaluate()) {
+                            break;
+                        }
+                        if (info.conditional != null && info.conditional.Evaluate()) {
+                            info.branch = info.conditionalBranch;
+                        }
+                        StoryBranch jumpBranch;
+                        if (info.branch == -2) {
+                            jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch;
+                        }
+                        else if (info.branch == -1) {
+                            if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch == null) {
+                                Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} has no parent! Cannot have option that jumps to parent branch.", currentStoryBranch.branch.branchName);
                                 parseRoutine = null;
-								yield break;
-							}
-							jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch;
-						}
-						else {
-							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
-								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
+                                yield break;
+                            }
+                            jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch;
+                        }
+                        else {
+                            if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
+                                Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
                                 parseRoutine = null;
-								yield break;
-							}
-							for (int j = 0; j < StoryBranchOrganizer.singleton.entries.Count; j++) {
-								if (StoryBranchOrganizer.singleton.entries[j].thisBranch == StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch]) {
-									StoryBranchOrganizer.singleton.entries[j].parentBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch;
-									break;
-								}
-							}
-							jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch];
-						}
-						DialogueBoxHandler.AddOption(info.message, jumpBranch);
-						break;
-					case CommandType.Jump:
-						if (info.conditional != null && !info.conditional.Evaluate()) {
-							break;
-						}
-						if (info.branch == -2) {
-							parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch));
-						}
-						else if (info.branch == -1) {
-							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch == null) {
-								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} has no parent! Cannot use '/jump_back' command.", currentStoryBranch.branch.branchName);
+                                yield break;
+                            }
+                            for (int j = 0; j < StoryBranchOrganizer.singleton.entries.Count; j++) {
+                                if (StoryBranchOrganizer.singleton.entries[j].thisBranch == StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch]) {
+                                    StoryBranchOrganizer.singleton.entries[j].parentBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch;
+                                    break;
+                                }
+                            }
+                            jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch];
+                        }
+                        DialogueBoxHandler.AddOption(info.message, jumpBranch);
+                        break;
+                    case CommandType.Jump:
+                        if (info.conditional != null && !info.conditional.Evaluate()) {
+                            break;
+                        }
+                        if (info.branch == -2) {
+                            parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch));
+                        }
+                        else if (info.branch == -1) {
+                            if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch == null) {
+                                Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} has no parent! Cannot use '/jump_back' command.", currentStoryBranch.branch.branchName);
                                 parseRoutine = null;
-								yield break;
-							}
-							parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch));
-						}
-						else {
-							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
-								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
+                                yield break;
+                            }
+                            parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch));
+                        }
+                        else {
+                            if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
+                                Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
                                 parseRoutine = null;
-								yield break;
-							}
-							for (int j = 0; j < StoryBranchOrganizer.singleton.entries.Count; j++) {
-								if (StoryBranchOrganizer.singleton.entries[j].thisBranch == StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch]) {
-									StoryBranchOrganizer.singleton.entries[j].parentBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch;
-									break;
-								}
-							}
-							parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch]));
-						}
-						yield break;
-					case CommandType.SetFlag:
-						ConditionalFlags.AddFlag(info.message);
-						break;
-					case CommandType.SetStat:
-						if (info.relative) {
-							if (info.negate) {
-								info.value *= -1;
-							}
-							SetCharacterStatRelative(info.character, info.stat, info.value);
-						}
-						else {
-							SetCharacterStat(info.character, info.stat, info.value);
-						}
-						break;
-					case CommandType.SetMood:
-						DialogueBoxHandler.UpdateMood(info.mood);
-						break;
-					case CommandType.Wait:
-						if (info.value > 0) {
-							yield return new WaitForSeconds(info.value);
-						}
-						else {
-							waitingForInput = true;
-							while (waitingForInput) {
-								yield return null;
-							}
-						}
-						break;
-					}
-				}
-				parseRoutine = null;
-				if (DialogueBoxHandler.messageBox == null) {
-					yield break;
-				}
-				for (int i = 0; i < DialogueBoxHandler.messageBox.buttons.Count; i++) {
-					if (DialogueBoxHandler.messageBox.buttons[i].buttonActive) {
-						yield break;
-					}
-				}
-				DialogueBoxHandler.CharacterStopTalking();
+                                yield break;
+                            }
+                            for (int j = 0; j < StoryBranchOrganizer.singleton.entries.Count; j++) {
+                                if (StoryBranchOrganizer.singleton.entries[j].thisBranch == StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch]) {
+                                    StoryBranchOrganizer.singleton.entries[j].parentBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch;
+                                    break;
+                                }
+                            }
+                            parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch]));
+                        }
+                        yield break;
+                    case CommandType.SetFlag:
+                        ConditionalFlags.AddFlag(info.message);
+                        break;
+                    case CommandType.SetStat:
+                        if (info.relative) {
+                            if (info.negate) {
+                                info.value *= -1;
+                            }
+                            SetCharacterStatRelative(info.character, info.stat, info.value);
+                        }
+                        else {
+                            SetCharacterStat(info.character, info.stat, info.value);
+                        }
+                        break;
+                    case CommandType.SetMood:
+                        DialogueBoxHandler.UpdateMood(info.mood);
+                        break;
+                    case CommandType.Wait:
+                        if (info.value > 0) {
+                            yield return new WaitForSeconds(info.value);
+                        }
+                        else {
+                            waitingForInput = true;
+                            while (waitingForInput) {
+                                yield return null;
+                            }
+                        }
+                        break;
+                    }
+                }
+                parseRoutine = null;
+                if (DialogueBoxHandler.messageBox == null) {
+                    yield break;
+                }
+                for (int i = 0; i < DialogueBoxHandler.messageBox.buttons.Count; i++) {
+                    if (DialogueBoxHandler.messageBox.buttons[i].buttonActive) {
+                        yield break;
+                    }
+                }
+                DialogueBoxHandler.CharacterStopTalking();
 				yield break;
 			}
 
