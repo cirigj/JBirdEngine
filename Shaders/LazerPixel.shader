@@ -182,7 +182,7 @@
 				if (_Mode == 2) {
 
 					//adjust hue
-					hue = round(hue / 30) * 30;
+					hue = ceil(hue / 30) * 30;
 					if (hue >= 360) {
 						hue -= 360;
 					}
