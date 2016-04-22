@@ -62,7 +62,7 @@
 			float pi = 3.14159265359;
 
 			float rand(float2 inVec)  {
-	            return frac(sin(dot(inVec * sin(_Time.x * 10), float2(12.9898,78.233))) * 43758.5453);
+	            return frac(sin(dot(inVec * sin(_Time.x), float2(12.9898,78.233))) * 43758.5453);
 	        }
 
 			fixed4 frag (v2f i) : SV_Target
