@@ -5,6 +5,9 @@ public class CRTEffect : MonoBehaviour {
 
 	Material material;
 
+	[Range(0f,1f)]
+	public float CRTLerp;
+
 	public Texture2D fisheyeMap;
 	public float fisheyeStrength = 0.05f;
 
@@ -29,6 +32,7 @@ public class CRTEffect : MonoBehaviour {
 	}
 
 	void OnRenderImage (RenderTexture source, RenderTexture destination) {
+		material.SetFloat ("_Lerp", CRTLerp);
 		material.SetFloat ("_CRTBrightness", CRTBrightness);
 		material.SetInt ("_CRTSize", CRTSize);
 		material.SetTexture ("_Fisheye", fisheyeMap);

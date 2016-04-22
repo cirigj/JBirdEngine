@@ -3,6 +3,7 @@
 	Properties
 	{
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
+		_Lerp ("Lerping in and out", Float) = 1
 		_Lines ("CRT Lines", Float) = 64
 		_LineDarkness ("Line Darkness", Float) = 2.5
 		_ScanLineTime ("Scan Line Time", Float) = 1
@@ -48,6 +49,7 @@
 			}
 			
 			sampler2D _MainTex;
+			float _Lerp;
 			float _Lines;
 			float _LineDarkness;
 			float _ScanLineTime;
@@ -68,17 +70,17 @@
 			fixed4 frag (v2f i) : SV_Target
 			{
 				float3 fisheyeUV = tex2D(_Fisheye, i.uv);
-				i.uv -= (fisheyeUV.xy * 2 - 1) * _FisheyeStrength;
+				i.uv -= (fisheyeUV.xy * 2 - 1) * _FisheyeStrength * _Lerp;
 				i.uv = saturate(i.uv);
 				fixed4 col = tex2D(_MainTex, i.uv);
 				float4 o;
 				o.rgb = col.rgb;
-				o.r = saturate(min(col.r, col.r + _CRTBrightness * sign(fmod((round(i.uv.y * _CRTSize) + round(i.uv.x * _CRTSize * 3)), 3) - 2) / 2));
-				o.b = saturate(min(col.b, col.b + _CRTBrightness * sign(fmod((round(i.uv.y * _CRTSize) + round(i.uv.x * _CRTSize * 3)) + 1, 3) - 2) / 2));
-				o.g = saturate(min(col.g, col.g + _CRTBrightness * sign(fmod((round(i.uv.y * _CRTSize) + round(i.uv.x * _CRTSize * 3)) + 2, 3) - 2) / 2));
-				o.rgb += float3(1,1,1) * _ScanLineAlpha * saturate(_ScanLineAlpha * sign(-abs(fmod(i.uv.y - (_Time.y + 100) / _ScanLineTime, 1)) + _ScanLineSize));
-				o.rgb += float3(1,1,1) * _Static * rand(i.uv);
-				o.rgb -= float3(1,1,1) * _LineDarkness * fmod(i.uv.y, 1.0 / _Lines);
+				o.r = saturate(min(col.r, col.r + (_CRTBrightness * sign(fmod((round(i.uv.y * _CRTSize) + round(i.uv.x * _CRTSize * 3)), 3) - 2) / 2) * _Lerp));
+				o.b = saturate(min(col.b, col.b + (_CRTBrightness * sign(fmod((round(i.uv.y * _CRTSize) + round(i.uv.x * _CRTSize * 3)) + 1, 3) - 2) / 2) * _Lerp));
+				o.g = saturate(min(col.g, col.g + (_CRTBrightness * sign(fmod((round(i.uv.y * _CRTSize) + round(i.uv.x * _CRTSize * 3)) + 2, 3) - 2) / 2) * _Lerp));
+				o.rgb += float3(1,1,1) * _Lerp * _ScanLineAlpha * saturate(_ScanLineAlpha * sign(-abs(fmod(i.uv.y - (_Time.y + 100) / _ScanLineTime, 1)) + _ScanLineSize));
+				o.rgb += float3(1,1,1) * _Lerp * _Static * rand(i.uv);
+				o.rgb -= float3(1,1,1) * _Lerp * _LineDarkness * fmod(i.uv.y, 1.0 / _Lines);
 				o.a = 1.0;
 				return o;
 			}
