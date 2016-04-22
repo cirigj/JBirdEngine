@@ -383,9 +383,12 @@
 					if ((int)pixelX % 2 == (int)pixelY % 2) {
 						col.rgb += _Checkering;
 					}
-					col.rgb = sqrt(col.rgb);
+					//col.rgb = sqrt(col.rgb);
+					col.r = floor(col.r * (float)_TexSize) / (float)_TexSize;
+					col.g = floor(col.g * (float)_TexSize) / (float)_TexSize;
+					col.b = floor(col.b * (float)_TexSize) / (float)_TexSize;
 					col.rgb = tex3D(_CustomPalette, col.rgb * _Scale + _Offset).rgb;
-					col.rgb = col.rgb*col.rgb; 
+					//col.rgb = col.rgb*col.rgb; 
 					return col;
 				}
 

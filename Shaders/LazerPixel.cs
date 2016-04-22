@@ -16,6 +16,9 @@ public class LazerPixel : MonoBehaviour {
     public enum ClampMode {
         NoClamp,
         ClosestRGB,
+		HSVCylinder,
+		HSVCone,
+		ClosestLuma,
     }
 
 	public Mode mode;
@@ -82,6 +85,73 @@ public class LazerPixel : MonoBehaviour {
         texSize = newSize;
     }
 
+	float ColorDistanceRGB (Color c1, Color c2) {
+		return (Mathf.Sqrt((c1.r - c2.r) * (c1.r - c2.r) + (c1.g - c2.g) * (c1.g - c2.g) + (c1.b - c2.b) * (c1.b - c2.b)));
+	}
+
+	float ColorDistanceHSVCylinder (Color c1, Color c2) {
+		ColorHelper.ColorHSV c1hsv = new ColorHelper.ColorHSV(c1);
+		ColorHelper.ColorHSV c2hsv = new ColorHelper.ColorHSV(c2);
+		return (Vector3.Distance(Quaternion.AngleAxis(c1hsv.h, Vector3.up) * (Vector3.right * c1hsv.v + Vector3.up * c1hsv.s), Quaternion.AngleAxis(c2hsv.h, Vector3.up) * (Vector3.right * c2hsv.v + Vector3.up * c2hsv.s)));
+	}
+
+	float ColorDistanceHSVCone (Color c1, Color c2) {
+		return 0;
+	}
+
+	float ColorDistanceLuma (Color c1, Color c2) {
+		return Mathf.Abs(c1.GetLuma() - c2.GetLuma());
+	}
+
+	Color ClampToNearestColor (Color c, ClampMode clampMode) {
+		if (JBirdPalette == null) {
+			return c;
+		}
+		float minDist = 1000f;
+		Color closest = Color.white;
+		switch (clampMode) {
+		case ClampMode.NoClamp:
+			return c;
+		case ClampMode.ClosestRGB:
+			foreach (Color c2 in JBirdPalette.colorList) {
+				float dist = ColorDistanceRGB(c, c2);
+				if (dist < minDist) {
+					minDist = dist;
+					closest = c2;
+				}
+			}
+			break;
+		case ClampMode.HSVCylinder:
+			foreach (Color c2 in JBirdPalette.colorList) {
+				float dist = ColorDistanceHSVCylinder(c, c2);
+				if (dist < minDist) {
+					minDist = dist;
+					closest = c2;
+				}
+			}
+			break;
+		case ClampMode.HSVCone:
+			foreach (Color c2 in JBirdPalette.colorList) {
+				float dist = ColorDistanceHSVCone(c, c2);
+				if (dist < minDist) {
+					minDist = dist;
+					closest = c2;
+				}
+			}
+			break;
+		case ClampMode.ClosestLuma:
+			foreach (Color c2 in JBirdPalette.colorList) {
+				float dist = ColorDistanceLuma(c, c2);
+				if (dist < minDist) {
+					minDist = dist;
+					closest = c2;
+				}
+			}
+			break;
+		}
+		return closest;
+	}
+
     public void GenerateTex3D () {
         ClampToAcceptableSize();
         paletteTexture = new Texture3D(texSize, texSize, texSize, TextureFormat.ARGB32, true);
@@ -95,13 +165,7 @@ public class LazerPixel : MonoBehaviour {
                     c.r = r * colorStep;
                     c.g = g * colorStep;
                     c.b = b * colorStep;
-                    if (clampMode == ClampMode.ClosestRGB) {
-                        ColorHelper.ColorHSV hsv = c.ToHSV();
-                        hsv.h = Mathf.RoundToInt((float)hsv.h / 30) * 30;
-                        hsv.s = Mathf.Round(hsv.s * 2f) / 2f;
-                        hsv.v = Mathf.Round(hsv.v * 2f) / 2f;
-                        c = hsv.ToColor();
-                    }
+					c = ClampToNearestColor(c, clampMode);
                     colors[texIndex] = c;
                     //texColors.Add(c);
                 }
