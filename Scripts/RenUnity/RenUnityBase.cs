@@ -866,17 +866,112 @@ namespace JBirdEngine {
 				CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value += value;
 			}
 
-			private static IEnumerator ParseDialogue (StoryBranch currentStoryBranch) {
-				if (StoryBranchOrganizer.singleton == null) {
-					Debug.LogErrorFormat("RenUnity.DialogueParser: No StoryBranchOrganizer instance exists! Please create one somewhere in the Assets folder.");
+            public static void PreParseBranch (StoryBranch currentStoryBranch, bool autoFix) {
+                bool errorsFound = false;
+                bool lastCommandWasMessage = false;
+                int numErrors = 0;
+                for (int i = 0; i < currentStoryBranch.branch.script.Count; i++) {
+					CommandInfo info = ParseLine(currentStoryBranch.branch.script[i], i, currentStoryBranch.branch.branchName);
+                    if (info == null) {
+                        errorsFound = true;
+                        numErrors++;
+                        continue;
+                    }
+                    if (autoFix) {
+                        if (info.type == CommandType.Ignore) {
+                            continue;
+                        }
+                        if (info.type == CommandType.Message) {
+                            if (info.message.Length >= 10 && info.message.Substring(0, 10) == "start_talk") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a start_talk command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 9 && info.message.Substring(0, 9) == "stop_talk") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a stop_talk command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 4 && info.message.Substring(0, 4) == "jump") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a jump command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 6 && info.message.Substring(0, 6) == "option") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a option command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 9 && info.message.Substring(0, 9) == "jump_back") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a jump_back command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 8 && info.message.Substring(0, 8) == "set_flag") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a set_flag command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 8 && info.message.Substring(0, 8) == "set_stat") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a set_stat command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 4 && info.message.Substring(0, 4) == "wait") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a wait command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 4 && info.message.Substring(0, 4) == "mood") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a mood command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            if (!lastCommandWasMessage) {
+                                lastCommandWasMessage = true;
+                                continue;
+                            }
+                        }
+                        else {
+                            lastCommandWasMessage = false;
+                        }
+                        if (info.type == CommandType.Message || info.type == CommandType.Jump || info.type == CommandType.StartTalk) {
+                            if (lastCommandWasMessage) {
+                                currentStoryBranch.branch.script.Insert(i, "/wait");
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found message without following wait command at index {0}; automatically inserting wait command.", i);
+                                lastCommandWasMessage = false;
+                            }
+                        }
+                    }
+                }
+                if (!errorsFound) {
+                    Debug.LogFormat("RenUnity.DialogueParser: Finished pre-parsing {0} lines - No syntax errors found.", currentStoryBranch.branch.script.Count);
+                }
+                else {
+                    Debug.LogErrorFormat("RenUnity.DialogueParser: Pre-parsing finished with {0} errors.", numErrors);
+                }
+            }
+
+			private static IEnumerator ParseDialogue (StoryBranch currentStoryBranch, bool preParse = false) {
+                if (StoryBranchOrganizer.singleton == null) {
+                    Debug.LogErrorFormat("RenUnity.DialogueParser: No StoryBranchOrganizer instance exists! Please create one somewhere in the Assets folder.");
                     parseRoutine = null;
-					yield break;
-				}
-				if (RenUnityBase.singleton == null) {
-					Debug.LogErrorFormat("RenUnity.DialogueParser: No RenUnityBase instance exists! Please make sure one is instantiated, and start this coroutine on 'RenUnityBase.singleton'.");
+                    yield break;
+                }
+                if (RenUnityBase.singleton == null) {
+                    Debug.LogErrorFormat("RenUnity.DialogueParser: No RenUnityBase instance exists! Please make sure one is instantiated, and start this coroutine on 'RenUnityBase.singleton'.");
                     parseRoutine = null;
-					yield break;
-				}
+                    yield break;
+                }
                 int branchIndex = -1;
                 bool useCache = false;
                 if (currentStoryBranch.cachedIndex < StoryBranchOrganizer.singleton.entries.Count && currentStoryBranch.cachedIndex >= 0) {
@@ -941,13 +1036,13 @@ namespace JBirdEngine {
 							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch == null) {
 								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} has no parent! Cannot have option that jumps to parent branch.", currentStoryBranch.branch.branchName);
                                 parseRoutine = null;
-								yield break;
-							}
-							jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch;
-						}
-						else {
-							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
-								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
+                                yield break;
+                            }
+                            jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch;
+                        }
+                        else {
+                            if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
+                                Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
                                 parseRoutine = null;
 								yield break;
 							}
@@ -975,13 +1070,13 @@ namespace JBirdEngine {
 							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch == null) {
 								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} has no parent! Cannot use '/jump_back' command.", currentStoryBranch.branch.branchName);
                                 parseRoutine = null;
-								yield break;
-							}
-							parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch));
-						}
-						else {
-							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
-								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
+                                yield break;
+                            }
+                            parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch));
+                        }
+                        else {
+                            if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
+                                Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
                                 parseRoutine = null;
 								yield break;
 							}
