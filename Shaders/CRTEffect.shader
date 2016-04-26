@@ -80,7 +80,7 @@
 				o.g = saturate(min(col.g, col.g + (_CRTBrightness * sign(fmod((round(i.uv.y * _CRTSize) + round(i.uv.x * _CRTSize * 3)) + 2, 3) - 2) / 2) * _Lerp));
 				o.rgb += float3(1,1,1) * _Lerp * _ScanLineAlpha * saturate(_ScanLineAlpha * sign(-abs(fmod(i.uv.y - (_Time.y + 100) / _ScanLineTime, 1)) + _ScanLineSize));
 				o.rgb += float3(1,1,1) * _Lerp * _Static * rand(i.uv);
-				o.rgb -= float3(1,1,1) * _Lerp * _LineDarkness * fmod(i.uv.y, 1.0 / _Lines);
+				o.rgb -= float3(1,1,1) * _Lerp * _LineDarkness * round(fmod(i.uv.y, 1.0 / _Lines) * _Lines);
 				o.a = 1.0;
 				return o;
 			}

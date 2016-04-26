@@ -6,7 +6,7 @@ public class CRTEffect : MonoBehaviour {
 	Material material;
 
 	[Range(0f,1f)]
-	public float CRTLerp;
+	public float CRTLerp = 1f;
 
 	public Texture2D fisheyeMap;
 	public float fisheyeStrength = 0.05f;
@@ -15,14 +15,14 @@ public class CRTEffect : MonoBehaviour {
 	public float CRTBrightness = 0.2f;
 	public int CRTSize = 180;
 
-	public float CRTLines = 64;
-	public float lineDarkness = 2.5f;
+	public float CRTLines = 90;
+	public float lineDarkness = 0.1f;
 
 	public float scanLineTime = 1.5f;
 	[Range(0f,1f)]
 	public float scanLineAlpha = 0.1f;
 	[Range(0f,1f)]
-	public float scanLineSize = 0.05f;
+	public float scanLineSize = 0.25f;
 
 	[Range(-1f,1f)]
 	public float staticFuzz = 0.2f;
