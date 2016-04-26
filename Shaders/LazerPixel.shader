@@ -459,13 +459,13 @@
 					if ((int)pixelX % 2 == (int)pixelY % 2) {
 						s -= _Checkering;
 					}
-					s = clamp(round((s + _SatCorrect) * 2) / 3 + .1, 0, 1);
+					s = clamp(s + _SatCorrect, 0, 1);
 
 					//adjust value
 					if ((int)pixelX % 2 == (int)pixelY % 2) {
 						v -= _Checkering;
 					}
-					v = clamp(round(v * 3) / 4 + .6, 0, 1);
+					v = clamp(v, 0, 1);
 
 					//convert to RGB
 					float R = saturate(abs((hue / 360) * 6 - 3) - 1);
@@ -475,7 +475,7 @@
 					float4 endColor = float4(((hueRGB - 1) * s + 1) * v, 1.0);
 
 					float3 closestRGB = float3(0,0,0);
-					float closestDist = 100;
+					float closestDist = 1000;
 					//if ((int)pixelX % 2 == (int)pixelY % 2) {
 					//	endColor.rgb += float3(_Checkering, _Checkering, _Checkering);
 					//}
