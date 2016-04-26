@@ -32,7 +32,7 @@ public class LazerPixel : MonoBehaviour {
     private Material material;
     private Material c64material;
     [Header("Custom Palette Specs:")]
-    public JBirdEngine.ColorLibrary.JBirdColorPalette JBirdPalette;
+    public JBirdColorPalette JBirdPalette;
     public Texture3D paletteTexture;
     public int texSize;
     public ClampMode clampMode;
