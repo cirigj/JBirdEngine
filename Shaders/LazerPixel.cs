@@ -11,6 +11,7 @@ public class LazerPixel : MonoBehaviour {
 		NESEmulation,
         CustomPalette,
         GBAGrayscaleRamp,
+		Commodore64,
 	}
 
     public enum ClampMode {
@@ -53,9 +54,10 @@ public class LazerPixel : MonoBehaviour {
 		material.SetFloat("_SatCorrect", saturationCorrection);
         material.SetTexture("_CustomPalette", paletteTexture);
         material.SetInt("_TexSize", texSize);
-        paletteTexture.wrapMode = TextureWrapMode.Clamp;
+		paletteTexture.wrapMode = TextureWrapMode.Clamp;
+		paletteTexture.filterMode = FilterMode.Point;
         material.SetFloat("_Scale", (paletteTexture.width - 1) / (1.0f * paletteTexture.width));
-        material.SetFloat("_Offset", 1.0f / (2.0f * paletteTexture.width));
+		material.SetFloat("_Offset", 1.0f / (2.0f * paletteTexture.width));
         material.SetColor("_GBAColor1", color1);
         material.SetColor("_GBAColor2", color2);
         material.SetColor("_GBAColor3", color3);
@@ -161,7 +163,7 @@ public class LazerPixel : MonoBehaviour {
         Color c = Color.white;
         for (int b = 0; b < texSize; b++) {
             for (int g = 0; g < texSize; g++) {
-                for (int r = 0; r < texSize; r++, texIndex++) {
+				for (int r = 0; r < texSize; r++, texIndex++) {
                     c.r = r * colorStep;
                     c.g = g * colorStep;
                     c.b = b * colorStep;

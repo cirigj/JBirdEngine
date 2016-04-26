@@ -26,6 +26,8 @@
 		Pass
 		{
 			CGPROGRAM
+// Upgrade NOTE: excluded shader from DX11, Xbox360, OpenGL ES 2.0 because it uses unsized arrays
+//#pragma exclude_renderers d3d11 xbox360 gles
 			#pragma vertex vert
 			#pragma fragment frag
 			
@@ -69,13 +71,13 @@
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float pixelX = floor(i.uv.x * _Width / (float)_PixelScale);
-				float pixelY = floor(i.uv.y * _Height / (float)_PixelScale);
+				float pixelX = min(floor(floor(i.uv.x * _Width) / (float)_PixelScale), round(round(i.uv.x * _Width) / (float)_PixelScale));
+				float pixelY = min(floor(floor(i.uv.y * _Height) / (float)_PixelScale), round(round(i.uv.y * _Height) / (float)_PixelScale));
 				float totalRed = 0; float totalGreen = 0; float totalBlue = 0;
 				float numColors = 0;
 				for (float i = 0; i < _PixelScale; i += 1) {
 					for (float j = 0; j < _PixelScale; j += 1) {
-						float4 pixelColor = tex2D(_MainTex, float2((pixelX * (float)_PixelScale + i) / _Width, (pixelY * (float)_PixelScale + j) / _Height));
+						float4 pixelColor = tex2D(_MainTex, float2((pixelX * (float)_PixelScale + i) / (_Width), (pixelY * (float)_PixelScale + j) / (_Height)));
 						totalRed += pixelColor.r;
 						totalGreen += pixelColor.g;
 						totalBlue += pixelColor.b;
@@ -383,12 +385,10 @@
 					if ((int)pixelX % 2 == (int)pixelY % 2) {
 						col.rgb += _Checkering;
 					}
-					//col.rgb = sqrt(col.rgb);
-					col.r = floor(col.r * (float)_TexSize) / (float)_TexSize;
-					col.g = floor(col.g * (float)_TexSize) / (float)_TexSize;
-					col.b = floor(col.b * (float)_TexSize) / (float)_TexSize;
-					col.rgb = tex3D(_CustomPalette, col.rgb * _Scale + _Offset).rgb;
-					//col.rgb = col.rgb*col.rgb; 
+					col.r = (floor((col.r) * (float)(_TexSize))) / (float)(_TexSize);
+					col.g = (floor((col.g) * (float)(_TexSize))) / (float)(_TexSize);
+					col.b = (floor((col.b) * (float)(_TexSize))) / (float)(_TexSize);
+					col.rgb = tex3D(_CustomPalette, col.rgb * _Scale + _Offset, 0, 0).rgb;
 					return col;
 				}
 
@@ -413,6 +413,62 @@
 						return _GBAColor4;
 					}
 
+				}
+
+				//Commodore64
+				if (_Mode == 5) {
+					float3 c64palette[16] = {
+						float3(0, 0, 0), //black
+						float3(1, 1, 1), //white
+						float3(.533, 0, 0), //red
+						float3(.667, 1, .933), //cyan
+						float3(.8, .267, .8), //violet
+						float3(0, .8, .333), //green
+						float3(0, 0, .667), //blue
+						float3(.933, .933, .467), //yellow
+						float3(.867, .533, .333), //orange
+						float3(.4, .267, 0), //brown
+						float3(1, .467, .467), //light red
+						float3(.2, .2, .2), //grey 1
+						float3(.467, .467, .467), //grey 2
+						float3(.667, 1, .4), //light green
+						float3(0, .533, 1), //light blue
+						float3(.733, .733, .733) //grey 3
+					};
+
+					//adjust saturation
+					if ((int)pixelX % 2 == (int)pixelY % 2) {
+						s -= _Checkering;
+					}
+					s = clamp(round((s + _SatCorrect) * 2) / 3 + .1, 0, 1);
+
+					//adjust value
+					if ((int)pixelX % 2 == (int)pixelY % 2) {
+						v -= _Checkering;
+					}
+					v = clamp(round(v * 3) / 4 + .6, 0, 1);
+
+					//convert to RGB
+					float R = saturate(abs((hue / 360) * 6 - 3) - 1);
+					float G = saturate(2 - abs((hue / 360) * 6 - 2));
+					float B = saturate(2 - abs((hue / 360) * 6 - 4));
+					float3 hueRGB = float3(R,G,B);
+					float4 endColor = float4(((hueRGB - 1) * s + 1) * v, 1.0);
+
+					float3 closestRGB = float3(0,0,0);
+					float closestDist = 100;
+					//if ((int)pixelX % 2 == (int)pixelY % 2) {
+					//	endColor.rgb += float3(_Checkering, _Checkering, _Checkering);
+					//}
+					for (int i = 0; i < 16; i++) {
+						float dist = sqrt((endColor.r - c64palette[i].r) * (endColor.r - c64palette[i].r) + (endColor.g - c64palette[i].g) * (endColor.g - c64palette[i].g) + (endColor.b - c64palette[i].b) * (endColor.b - c64palette[i].b));
+						if (dist < closestDist) {
+							closestDist = dist;
+							closestRGB = c64palette[i];
+						}
+					}
+					endColor.rgb = closestRGB;
+					return endColor;
 				}
 
                 return fixed4(1,1,1,1);
