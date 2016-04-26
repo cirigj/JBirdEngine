@@ -30,6 +30,7 @@ public class LazerPixel : MonoBehaviour {
 	[Range(-.5f, .5f)]
 	public float saturationCorrection = 0f;
     private Material material;
+    private Material c64material;
     [Header("Custom Palette Specs:")]
     public JBirdEngine.ColorLibrary.JBirdColorPalette JBirdPalette;
     public Texture3D paletteTexture;
@@ -43,6 +44,7 @@ public class LazerPixel : MonoBehaviour {
 
     void Awake () {
         material = new Material(Shader.Find("Hidden/LazerPixel"));
+        c64material = new Material(Shader.Find("Hidden/Commodore64Pass"));
     }
 
     void OnRenderImage (RenderTexture source, RenderTexture destination) {
@@ -62,7 +64,17 @@ public class LazerPixel : MonoBehaviour {
         material.SetColor("_GBAColor2", color2);
         material.SetColor("_GBAColor3", color3);
         material.SetColor("_GBAColor4", color4);
-        Graphics.Blit(source, destination, material);
+        if (mode == Mode.Commodore64) {
+            RenderTexture temp = new RenderTexture(source.width, source.height, source.depth, source.format);
+            Graphics.Blit(source, temp, material);
+            c64material.SetInt("_PixelScale", pixelScale);
+            c64material.SetFloat("_Width", (float)source.width);
+            c64material.SetFloat("_Height", (float)source.height);
+            Graphics.Blit(temp, destination, c64material);
+        }
+        else {
+            Graphics.Blit(source, destination, material);
+        }
     }
 
     void ClampToAcceptableSize () {

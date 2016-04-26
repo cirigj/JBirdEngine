@@ -436,6 +436,25 @@
 						float3(.733, .733, .733) //grey 3
 					};
 
+					float3 c64conversion[16] = {
+						float3(0,		0,		0),
+						float3(0.25,	0,		0),
+						float3(0.5,		0,		0),
+						float3(0.75,	0,		0),
+						float3(0,		0.25,	0),
+						float3(0.25,	0.25,	0),
+						float3(0.5,		0.25,	0),
+						float3(0.75,	0.25,	0),
+						float3(0,		0.5,	0),
+						float3(0.25,	0.5,	0),
+						float3(0.5,		0.5,	0),
+						float3(0.75,	0.5,	0),
+						float3(0,		0.75,	0),
+						float3(0.25,	0.75,	0),
+						float3(0.5,		0.75,	0),
+						float3(0.75,	0.75,	0)
+					};
+
 					//adjust saturation
 					if ((int)pixelX % 2 == (int)pixelY % 2) {
 						s -= _Checkering;
@@ -464,7 +483,7 @@
 						float dist = sqrt((endColor.r - c64palette[i].r) * (endColor.r - c64palette[i].r) + (endColor.g - c64palette[i].g) * (endColor.g - c64palette[i].g) + (endColor.b - c64palette[i].b) * (endColor.b - c64palette[i].b));
 						if (dist < closestDist) {
 							closestDist = dist;
-							closestRGB = c64palette[i];
+							closestRGB = c64conversion[i];
 						}
 					}
 					endColor.rgb = closestRGB;
