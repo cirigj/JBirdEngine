@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 #endif
 using JBirdEngine.RenUnity;
+using UnityEngine.Events;
 
 #if UNITY_EDITOR
 [CustomEditor(typeof(RenUnityBase))]
@@ -101,10 +102,10 @@ public class RenUnityBaseEditor : Editor {
 			for (int i = 0; i < StoryBranchOrganizer.singleton.entries.Count; i++) {
 				EditorGUILayout.Space();
 				if (StoryBranchOrganizer.singleton.entries[i].thisBranch == null) {
-					EditorGUILayout.LabelField(string.Format("Branch Name: {0}", "N/A"), EditorStyles.boldLabel);
+					EditorGUILayout.LabelField(string.Format("Index {0} - Branch Name: {1}", i, "N/A"), EditorStyles.boldLabel);
 				}
 				else {
-					EditorGUILayout.LabelField(string.Format("Branch Name: {0}", StoryBranchOrganizer.singleton.entries[i].thisBranch.name), EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField(string.Format("Index {0} - Branch Name: {1}", i, StoryBranchOrganizer.singleton.entries[i].thisBranch.name), EditorStyles.boldLabel);
 				}
 				StoryBranchOrganizer.singleton.entries[i].thisBranch = (StoryBranch)EditorGUILayout.ObjectField(StoryBranchOrganizer.singleton.entries[i].thisBranch, typeof(StoryBranch), false);
 				if (StoryBranchOrganizer.singleton.entries[i].parentBranch == null) {

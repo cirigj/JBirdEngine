@@ -6,6 +6,7 @@ using System.Text;
 using System.Linq;
 using UnityEngine.UI;
 using JBirdEngine.RenUnity;
+using UnityEngine.Events;
 
 
 /// <summary>
@@ -137,6 +138,7 @@ namespace JBirdEngine {
 			public StoryBranch thisBranch;
 			public StoryBranch parentBranch;
 			public List<StoryBranch> jumpList;
+            public List<UnityEvent> funcList;
 
 			public StoryBranchEntry () {
 				jumpList = new List<StoryBranch>();
@@ -661,6 +663,7 @@ namespace JBirdEngine {
 				SetMood,
 				Wait,
                 Ignore,
+                Func,
 			}
 
 			public enum ConditionalType {
@@ -703,24 +706,24 @@ namespace JBirdEngine {
 					else if (type == ConditionalType.Stat) {
 						string eval = string.Empty;
 						switch (evalType) {
-						case EvaluationType.Equals:
-							eval = string.Concat(eval, "==");
-							break;
-						case EvaluationType.NotEquals:
-							eval = string.Concat(eval, "!=");
-							break;
-						case EvaluationType.Greater:
-							eval = string.Concat(eval, ">");
-							break;
-						case EvaluationType.GreaterEqual:
-							eval = string.Concat(eval, ">=");
-							break;
-						case EvaluationType.Less:
-							eval = string.Concat(eval, "<");
-							break;
-						case EvaluationType.LessEqual:
-							eval = string.Concat(eval, "<=");
-							break;
+						    case EvaluationType.Equals:
+							    eval = string.Concat(eval, "==");
+							    break;
+						    case EvaluationType.NotEquals:
+							    eval = string.Concat(eval, "!=");
+							    break;
+						    case EvaluationType.Greater:
+							    eval = string.Concat(eval, ">");
+							    break;
+						    case EvaluationType.GreaterEqual:
+							    eval = string.Concat(eval, ">=");
+							    break;
+						    case EvaluationType.Less:
+							    eval = string.Concat(eval, "<");
+							    break;
+						    case EvaluationType.LessEqual:
+							    eval = string.Concat(eval, "<=");
+							    break;
 						}
 						return string.Format("if stat {0} {1} {2} {3}", character.ToString(), stat.ToString(), eval, value);
 					}
@@ -729,32 +732,32 @@ namespace JBirdEngine {
 
 				public bool Evaluate () {
 					switch (type) {
-					case ConditionalType.Flag:
-						if (exists) {
-							return ConditionalFlags.FlagExists(flag);
-						}
-						else {
-							return !ConditionalFlags.FlagExists(flag);
-						}
-					case ConditionalType.Stat:
-						switch (evalType) {
-						case EvaluationType.Equals:
-							return CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value == value;
-						case EvaluationType.NotEquals:
-							return CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value == value;
-						case EvaluationType.Greater:
-							return CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value > value;
-						case EvaluationType.GreaterEqual:
-							return CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value >= value;
-						case EvaluationType.Less:
-							return CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value < value;
-						case EvaluationType.LessEqual:
-							return CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value <= value;
-						default:
-							return false;
-						}
-					default:
-						return false;
+					    case ConditionalType.Flag:
+						    if (exists) {
+							    return ConditionalFlags.FlagExists(flag);
+						    }
+						    else {
+							    return !ConditionalFlags.FlagExists(flag);
+						    }
+					    case ConditionalType.Stat:
+						    switch (evalType) {
+						        case EvaluationType.Equals:
+							        return CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value == value;
+						        case EvaluationType.NotEquals:
+							        return CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value == value;
+						        case EvaluationType.Greater:
+							        return CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value > value;
+						        case EvaluationType.GreaterEqual:
+							        return CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value >= value;
+						        case EvaluationType.Less:
+							        return CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value < value;
+						        case EvaluationType.LessEqual:
+							        return CharacterDatabase.characters[(int)character - 1].stats[(int)stat - 1].value <= value;
+						        default:
+							        return false;
+						    }
+					    default:
+						    return false;
 					}
 				}
 
@@ -882,6 +885,9 @@ namespace JBirdEngine {
                     }
                     if (autoFix) {
                         if (info.type == CommandType.Ignore) {
+                            currentStoryBranch.branch.script.RemoveAt(i);
+                            Debug.LogFormat("RenUnity.DialogueParser: Removing empty line at index {0}.", i);
+                            i--;
                             continue;
                         }
                         if (info.type == CommandType.Message) {
@@ -936,6 +942,12 @@ namespace JBirdEngine {
                             else if (info.message.Length >= 4 && info.message.Substring(0, 4) == "mood") {
                                 currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
                                 Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a mood command without a slash at index {0}; automatically adding a slash.", i);
+                                i--;
+                                lastCommandWasMessage = false;
+                            }
+                            else if (info.message.Length >= 4 && info.message.Substring(0, 4) == "func") {
+                                currentStoryBranch.branch.script[i] = string.Concat("/", currentStoryBranch.branch.script[i]);
+                                Debug.LogFormat("RenUnity.DialogueParser: Pre-parsing found a func command without a slash at index {0}; automatically adding a slash.", i);
                                 i--;
                                 lastCommandWasMessage = false;
                             }
@@ -1004,124 +1016,135 @@ namespace JBirdEngine {
 				for (int i = 0; i < currentStoryBranch.branch.script.Count; i++) {
 					CommandInfo info = ParseLine(currentStoryBranch.branch.script[i], i, currentStoryBranch.branch.branchName);
 					switch (info.type) {
-					case CommandType.Message:
-						DialogueBoxHandler.DisplayMessage(info.message);
-						break;
-					case CommandType.StartTalk:
-						waitingForAnim = true;
-						DialogueBoxHandler.CharacterStartTalking(info.character, info.mood);
-						while (waitingForAnim) {
-							yield return null;
-						}
-						break;
-					case CommandType.StopTalk:
-						waitingForAnim = true;
-						DialogueBoxHandler.CharacterStopTalking();
-						while (waitingForAnim) {
-							yield return null;
-						}
-						yield break;
-					case CommandType.Option:
-						if (info.availability != null && !info.availability.Evaluate()) {
-							break;
-						}
-						if (info.conditional != null && info.conditional.Evaluate()) {
-							info.branch = info.conditionalBranch;
-						}
-						StoryBranch jumpBranch;
-                        if (info.branch == -3) {
+					    case CommandType.Message:
+						    DialogueBoxHandler.DisplayMessage(info.message);
+						    break;
+					    case CommandType.StartTalk:
+						    waitingForAnim = true;
+						    DialogueBoxHandler.CharacterStartTalking(info.character, info.mood);
+						    while (waitingForAnim) {
+							    yield return null;
+						    }
+						    break;
+					    case CommandType.StopTalk:
+						    waitingForAnim = true;
+						    DialogueBoxHandler.CharacterStopTalking();
+						    while (waitingForAnim) {
+							    yield return null;
+						    }
+						    yield break;
+					    case CommandType.Option:
+						    if (info.availability != null && !info.availability.Evaluate()) {
+							    break;
+						    }
+						    if (info.conditional != null && info.conditional.Evaluate()) {
+							    info.branch = info.conditionalBranch;
+						    }
+						    StoryBranch jumpBranch;
+                            if (info.branch == -3) {
+                                break;
+                            }
+						    if (info.branch == -2) {
+							    jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch;
+						    }
+						    else if (info.branch == -1) {
+							    if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch == null) {
+								    Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} has no parent! Cannot have option that jumps to parent branch.", currentStoryBranch.branch.branchName);
+                                    parseRoutine = null;
+                                    yield break;
+                                }
+                                jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch;
+                            }
+                            else {
+                                if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
+                                    Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
+                                    parseRoutine = null;
+								    yield break;
+							    }
+							    for (int j = 0; j < StoryBranchOrganizer.singleton.entries.Count; j++) {
+								    if (StoryBranchOrganizer.singleton.entries[j].thisBranch == StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch]) {
+									    StoryBranchOrganizer.singleton.entries[j].parentBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch;
+									    break;
+								    }
+							    }
+							    jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch];
+						    }
+						    DialogueBoxHandler.AddOption(info.message, jumpBranch);
+						    break;
+					    case CommandType.Jump:
+						    if (info.conditional != null && !info.conditional.Evaluate()) {
+							    break;
+						    }
+                            if (info.branch == -3) {
+                                break;
+                            }
+						    if (info.branch == -2) {
+							    parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch));
+						    }
+						    else if (info.branch == -1) {
+							    if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch == null) {
+								    Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} has no parent! Cannot use '/jump_back' command.", currentStoryBranch.branch.branchName);
+                                    parseRoutine = null;
+                                    yield break;
+                                }
+                                parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch));
+                            }
+                            else {
+                                if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
+                                    Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
+                                    parseRoutine = null;
+								    yield break;
+							    }
+							    for (int j = 0; j < StoryBranchOrganizer.singleton.entries.Count; j++) {
+								    if (StoryBranchOrganizer.singleton.entries[j].thisBranch == StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch]) {
+									    StoryBranchOrganizer.singleton.entries[j].parentBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch;
+									    break;
+								    }
+							    }
+							    parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch]));
+						    }
+						    yield break;
+					    case CommandType.SetFlag:
+						    ConditionalFlags.AddFlag(info.message);
+						    break;
+					    case CommandType.SetStat:
+						    if (info.relative) {
+							    if (info.negate) {
+								    info.value *= -1;
+							    }
+							    SetCharacterStatRelative(info.character, info.stat, info.value);
+						    }
+						    else {
+							    SetCharacterStat(info.character, info.stat, info.value);
+						    }
+						    break;
+					    case CommandType.SetMood:
+						    DialogueBoxHandler.UpdateMood(info.mood);
+						    break;
+					    case CommandType.Wait:
+						    if (info.value > 0) {
+							    yield return new WaitForSeconds(info.value);
+						    }
+						    else {
+							    waitingForInput = true;
+							    while (waitingForInput) {
+								    yield return null;
+							    }
+						    }
+						    break;
+                        case CommandType.Ignore:
                             break;
-                        }
-						if (info.branch == -2) {
-							jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch;
-						}
-						else if (info.branch == -1) {
-							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch == null) {
-								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} has no parent! Cannot have option that jumps to parent branch.", currentStoryBranch.branch.branchName);
+                        case CommandType.Func:
+                            if (info.conditional != null && !info.conditional.Evaluate()) {
+                                break;
+                            }
+                            if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].funcList.Count < info.branch + 1) {
+                                Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a function at index {1}!", currentStoryBranch.branch.branchName, info.branch);
                                 parseRoutine = null;
                                 yield break;
                             }
-                            jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch;
-                        }
-                        else {
-                            if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
-                                Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
-                                parseRoutine = null;
-								yield break;
-							}
-							for (int j = 0; j < StoryBranchOrganizer.singleton.entries.Count; j++) {
-								if (StoryBranchOrganizer.singleton.entries[j].thisBranch == StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch]) {
-									StoryBranchOrganizer.singleton.entries[j].parentBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch;
-									break;
-								}
-							}
-							jumpBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch];
-						}
-						DialogueBoxHandler.AddOption(info.message, jumpBranch);
-						break;
-					case CommandType.Jump:
-						if (info.conditional != null && !info.conditional.Evaluate()) {
-							break;
-						}
-                        if (info.branch == -3) {
+                            (StoryBranchOrganizer.singleton.entries[currentBranchIndex].funcList[info.branch]).Invoke();
                             break;
-                        }
-						if (info.branch == -2) {
-							parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch));
-						}
-						else if (info.branch == -1) {
-							if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch == null) {
-								Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} has no parent! Cannot use '/jump_back' command.", currentStoryBranch.branch.branchName);
-                                parseRoutine = null;
-                                yield break;
-                            }
-                            parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].parentBranch));
-                        }
-                        else {
-                            if (StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList.Count < info.branch + 1) {
-                                Debug.LogErrorFormat("RenUnity.DialogueParser: Branch {0} does not have a jump branch at index {1}!", currentStoryBranch.branch.branchName, info.branch);
-                                parseRoutine = null;
-								yield break;
-							}
-							for (int j = 0; j < StoryBranchOrganizer.singleton.entries.Count; j++) {
-								if (StoryBranchOrganizer.singleton.entries[j].thisBranch == StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch]) {
-									StoryBranchOrganizer.singleton.entries[j].parentBranch = StoryBranchOrganizer.singleton.entries[currentBranchIndex].thisBranch;
-									break;
-								}
-							}
-							parseRoutine = RenUnityBase.singleton.StartCoroutine(ParseDialogue(StoryBranchOrganizer.singleton.entries[currentBranchIndex].jumpList[info.branch]));
-						}
-						yield break;
-					case CommandType.SetFlag:
-						ConditionalFlags.AddFlag(info.message);
-						break;
-					case CommandType.SetStat:
-						if (info.relative) {
-							if (info.negate) {
-								info.value *= -1;
-							}
-							SetCharacterStatRelative(info.character, info.stat, info.value);
-						}
-						else {
-							SetCharacterStat(info.character, info.stat, info.value);
-						}
-						break;
-					case CommandType.SetMood:
-						DialogueBoxHandler.UpdateMood(info.mood);
-						break;
-					case CommandType.Wait:
-						if (info.value > 0) {
-							yield return new WaitForSeconds(info.value);
-						}
-						else {
-							waitingForInput = true;
-							while (waitingForInput) {
-								yield return null;
-							}
-						}
-						break;
-                    case CommandType.Ignore:
-                        break;
 					}
 				}
 				parseRoutine = null;
@@ -1141,8 +1164,9 @@ namespace JBirdEngine {
 				CommandInfo info = new CommandInfo();
 				if (!line.IsCommand()) {
 					if (line.IsEmptyString()) {
-						Debug.LogErrorFormat("RenUnity.DialogueParser: Empty line detected (branch {0}, line {1}).", branchName, lineNumber);
-						return null;
+						Debug.LogWarningFormat("RenUnity.DialogueParser: Empty line detected (branch {0}, line {1}).", branchName, lineNumber);
+                        info.type = CommandType.Ignore;
+						return info;
 					}
 					info.type = CommandType.Message;
 					info.message = line;
@@ -1155,79 +1179,85 @@ namespace JBirdEngine {
 				}
 				string command = tokens[0];
 				switch (command) {
-				case "start_talk":
-					if (tokens.Count != 2 && tokens.Count != 3) {
-						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/start_talk' command (branch {0}, line {1}). Correct syntax is '/start_talk [characterName] (moodName)'.", branchName, lineNumber);
-						return null;
-					}
-					return StartTalk(tokens, lineNumber, branchName);
-				case "stop_talk":
-					if (tokens.Count != 1) {
-						Debug.LogErrorFormat("RenUnity.DialogueParser: Extraneous arguments supplied to '/stop_talk' command (branch {0}, line {1}). Correct syntax is '/stop_talk'.", branchName, lineNumber);
-						return null;
-					}
-					return StopTalk(lineNumber, branchName);
-				case "option":
-					if (tokens.Count < 3) {
-						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/option' command (branch {0}, line {1}). Correct syntax is '/option (availabilityConditional) \"[text]\" (conditional branchIndex) [branchIndex]'.", branchName, lineNumber);
-						return null;
-					}
-					return Option(tokens, lineNumber, branchName);
-				case "jump":
-					if (tokens.Count != 2 && tokens.Count != 5 && tokens.Count != 8) {
-						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/jump' command (branch {0}, line {1}). Correct syntax is '/jump [branchIndex] (conditional)'.", branchName, lineNumber);
-						return null;
-					}
-					return Jump(tokens, lineNumber, branchName);
-				case "jump_back":
-					if (tokens.Count != 1) {
-						Debug.LogWarningFormat("RenUnity.DialogueParser: '/jump_back' command does not require additional arguments (branch {0}, line {1}).", branchName, lineNumber);
-					}
-					info.type = CommandType.Jump;
-					info.branch = -1;
-					return info;
-				case "set_flag":
-					if (tokens.Count != 2) {
-						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/set_flag' command (branch {0}, line {1}). Correct syntax is '/set_flag [flagName]'.", branchName, lineNumber);
-						return null;
-					}
-					info.type = CommandType.SetFlag;
-					info.message = tokens[1];
-					return info;
-				case "set_stat":
-					if (tokens.Count != 4 && tokens.Count != 5) {
-						for (int i = 0; i < tokens.Count; i++) {
-							Debug.Log(tokens[i]);
-						}
-						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/set_stat' command (branch {0}, line {1}). Correct syntax is '/set_stat [characterName] [stat] (+,-) [value]'.", branchName, lineNumber);
-						return null;
-					}
-					return SetStat(tokens, lineNumber, branchName);
-				case "wait":
-					info.type = CommandType.Wait;
-					if (tokens.Count == 1) {
-						return info;
-					}
-					else if (tokens.Count != 2) {
-						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/wait' command (branch {0}, line {1}). Correct syntax is '/wait (seconds)'.", branchName, lineNumber);
-						return null;
-					}
-					float value = 0f;
-					if (!float.TryParse(tokens[1], out value) || value < 0) {
-						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid value '{0}' for '/wait' command (branch {1}, line {2}).", tokens[1], branchName, lineNumber);
-						return null;
-					}
-					info.value = value;
-					return info;
-				case "mood":
-					if (tokens.Count != 2) {
-						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/mood' command (branch {0}, line {1}). Correct syntax is '/mood [moodName]'.", branchName, lineNumber);
-						return null;
-					}
-					return SetMood(tokens[1], lineNumber, branchName);
-				default:
-					Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid command '{0}' (branch {1}, line {2}).{3}Attempted to parse line: '{4}'.", command, branchName, lineNumber, System.Environment.NewLine, line);
-					return null;
+				    case "start_talk":
+					    if (tokens.Count != 2 && tokens.Count != 3) {
+						    Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/start_talk' command (branch {0}, line {1}). Correct syntax is '/start_talk [characterName] (moodName)'.", branchName, lineNumber);
+						    return null;
+					    }
+					    return StartTalk(tokens, lineNumber, branchName);
+				    case "stop_talk":
+					    if (tokens.Count != 1) {
+						    Debug.LogErrorFormat("RenUnity.DialogueParser: Extraneous arguments supplied to '/stop_talk' command (branch {0}, line {1}). Correct syntax is '/stop_talk'.", branchName, lineNumber);
+						    return null;
+					    }
+					    return StopTalk(lineNumber, branchName);
+				    case "option":
+					    if (tokens.Count < 3) {
+						    Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/option' command (branch {0}, line {1}). Correct syntax is '/option (availabilityConditional) \"[text]\" (conditional branchIndex) [branchIndex]'.", branchName, lineNumber);
+						    return null;
+					    }
+					    return Option(tokens, lineNumber, branchName);
+				    case "jump":
+					    if (tokens.Count != 2 && tokens.Count != 5 && tokens.Count != 8) {
+						    Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/jump' command (branch {0}, line {1}). Correct syntax is '/jump [branchIndex] (conditional)'.", branchName, lineNumber);
+						    return null;
+					    }
+					    return Jump(tokens, lineNumber, branchName);
+				    case "jump_back":
+					    if (tokens.Count != 1) {
+						    Debug.LogWarningFormat("RenUnity.DialogueParser: '/jump_back' command does not require additional arguments (branch {0}, line {1}).", branchName, lineNumber);
+					    }
+					    info.type = CommandType.Jump;
+					    info.branch = -1;
+					    return info;
+				    case "set_flag":
+					    if (tokens.Count != 2) {
+						    Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/set_flag' command (branch {0}, line {1}). Correct syntax is '/set_flag [flagName]'.", branchName, lineNumber);
+						    return null;
+					    }
+					    info.type = CommandType.SetFlag;
+					    info.message = tokens[1];
+					    return info;
+				    case "set_stat":
+					    if (tokens.Count != 4 && tokens.Count != 5) {
+						    for (int i = 0; i < tokens.Count; i++) {
+							    Debug.Log(tokens[i]);
+						    }
+						    Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/set_stat' command (branch {0}, line {1}). Correct syntax is '/set_stat [characterName] [stat] (+,-) [value]'.", branchName, lineNumber);
+						    return null;
+					    }
+					    return SetStat(tokens, lineNumber, branchName);
+				    case "wait":
+					    info.type = CommandType.Wait;
+					    if (tokens.Count == 1) {
+						    return info;
+					    }
+					    else if (tokens.Count != 2) {
+						    Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/wait' command (branch {0}, line {1}). Correct syntax is '/wait (seconds)'.", branchName, lineNumber);
+						    return null;
+					    }
+					    float value = 0f;
+					    if (!float.TryParse(tokens[1], out value) || value < 0) {
+						    Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid value '{0}' for '/wait' command (branch {1}, line {2}).", tokens[1], branchName, lineNumber);
+						    return null;
+					    }
+					    info.value = value;
+					    return info;
+				    case "mood":
+					    if (tokens.Count != 2) {
+						    Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/mood' command (branch {0}, line {1}). Correct syntax is '/mood [moodName]'.", branchName, lineNumber);
+						    return null;
+					    }
+					    return SetMood(tokens[1], lineNumber, branchName);
+                    case "func":
+                        if (tokens.Count != 2 && tokens.Count != 5 && tokens.Count != 8 && tokens.Count != 4 && tokens.Count != 7 && tokens.Count != 10) {
+					        Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/func' command (branch {0}, line {1}). Correct syntax is '/func (conditional) [functionIndex]'.", branchName, lineNumber);
+					        return null;
+				        }
+				        return Func(tokens, lineNumber, branchName);
+				    default:
+					    Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid command '{0}' (branch {1}, line {2}).{3}Attempted to parse line: '{4}'.", command, branchName, lineNumber, System.Environment.NewLine, line);
+					    return null;
 				}
 				//Debug.LogErrorFormat("RenUnity.DialogueParser: Command '{0}' recognized, but not implemented (branch {1}, line {2}).", tokens[0], branchName, lineNumber);
 				//return null;
@@ -1287,27 +1317,27 @@ namespace JBirdEngine {
 						return null;
 					}
 					switch (tokens[startIndex]) {
-					case "==":
-						conditional.evalType = EvaluationType.Equals;
-						break;
-					case "!=":
-						conditional.evalType = EvaluationType.NotEquals;
-						break;
-					case ">":
-						conditional.evalType = EvaluationType.Greater;
-						break;
-					case ">=":
-						conditional.evalType = EvaluationType.GreaterEqual;
-						break;
-					case "<":
-						conditional.evalType = EvaluationType.Less;
-						break;
-					case "<=":
-						conditional.evalType = EvaluationType.LessEqual;
-						break;
-					default:
-						Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid operator '{0}' (branch {1}, line {2}). Accepted operators are: ==, !=, >, >=, <, or <=.", tokens[startIndex], branchName, lineNumber);
-						return null;
+					    case "==":
+						    conditional.evalType = EvaluationType.Equals;
+						    break;
+					    case "!=":
+						    conditional.evalType = EvaluationType.NotEquals;
+						    break;
+					    case ">":
+						    conditional.evalType = EvaluationType.Greater;
+						    break;
+					    case ">=":
+						    conditional.evalType = EvaluationType.GreaterEqual;
+						    break;
+					    case "<":
+						    conditional.evalType = EvaluationType.Less;
+						    break;
+					    case "<=":
+						    conditional.evalType = EvaluationType.LessEqual;
+						    break;
+					    default:
+						    Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid operator '{0}' (branch {1}, line {2}). Accepted operators are: ==, !=, >, >=, <, or <=.", tokens[startIndex], branchName, lineNumber);
+						    return null;
 					}
 					startIndex++;
 					if (tokens.Count < startIndex + 1) {
@@ -1524,6 +1554,30 @@ namespace JBirdEngine {
 				info.value = value;
 				return info;
 			}
+
+            private static CommandInfo Func (List<string> tokens, int lineNumber = -1, string branchName = "N/A") {
+                CommandInfo info = new CommandInfo();
+                info.type = CommandType.Func;
+                int parseIndex = 1;
+                if (tokens[parseIndex] == "if") {
+                    info.conditional = HandleConditional(tokens, parseIndex + 1, lineNumber, branchName);
+                    if (info.conditional == null) {
+                        return null;
+                    }
+                    parseIndex += info.conditional.GetLength();
+                }
+                if (tokens.Count <= parseIndex) {
+                    Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/func' command (branch {0}, line {1}). Correct syntax is '/func (conditional) [functionIndex]'.", branchName, lineNumber);
+                    return null;
+                }
+                int funcIndex;
+                if (!int.TryParse(tokens[parseIndex], out funcIndex)) {
+                    Debug.LogErrorFormat("RenUnity.DialogueParser: Invalid use of '/func' command (branch {0}, line {1}). Correct syntax is '/func (conditional) [functionIndex]'.", branchName, lineNumber);
+                    return null;
+                }
+                info.branch = funcIndex;
+                return info;
+            }
 
 		}
 
