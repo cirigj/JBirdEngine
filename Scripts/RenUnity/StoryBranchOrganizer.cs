@@ -1,28 +1,21 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using JBirdEngine.RenUnity;
 
-namespace JBirdEngine {
-	
-	namespace RenUnity {
+[CreateAssetMenu]
+[System.Serializable]
+public class StoryBranchOrganizer : ScriptableObject {
 
-		[CreateAssetMenu]
-		[System.Serializable]
-		public class StoryBranchOrganizer : ScriptableObject {
+	public static StoryBranchOrganizer singleton;
 
-			public static StoryBranchOrganizer singleton;
+	public List<StoryBranchEntry> entries;
 
-			public List<StoryBranchEntry> entries;
-
-			void OnEnable () {
-				singleton = this;
-				if (entries == null) {
-					entries = new List<StoryBranchEntry>();
-				}
-			}
-
+	void OnEnable () {
+		singleton = this;
+		if (entries == null) {
+			entries = new List<StoryBranchEntry>();
 		}
-
 	}
 
 }

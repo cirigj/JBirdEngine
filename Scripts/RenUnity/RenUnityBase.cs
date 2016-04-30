@@ -5,90 +5,93 @@ using System.IO;
 using System.Text;
 using System.Linq;
 using UnityEngine.UI;
+using JBirdEngine.RenUnity;
+
+
+/// <summary>
+/// RenUnity base class for viewing variables via editor script.
+/// </summary>
+public class RenUnityBase : MonoBehaviour { 
+		
+	public static RenUnityBase singleton;
+
+	public StoryBranchOrganizer singletonSBO;
+
+    #if UNITY_EDITOR
+	public string jsonFilePath = RenUnityFilePaths.jsonFilePath;
+	public string branchesFilePath = RenUnityFilePaths.branchesFilePath;
+    #else
+    public string jsonFilePath = string.Empty;
+	public string branchesFilePath = string.Empty;
+    #endif
+
+    public List<string> conditionalFlags = new List<string>();
+
+	public List<CharacterData> characterData = new List<CharacterData>();
+
+	public float writeSpeed = 0.1f;
+
+	public RenUnityMessageBox messageBoxPrefab;
+
+	public Canvas uiCanvas;
+
+	void Awake () {
+		if (singleton == null) {
+			singleton = this;
+		}
+		GetCharacters();
+		CharacterDatabase.characters = characterData;
+		DialogueBoxHandler.writeSpeed = writeSpeed;
+	}
+
+	void Start () {
+		//DialogueParser.ParseBranch(StoryBranchOrganizer.singleton.entries[0].thisBranch);
+	}
+
+	void Update () {
+		if (Input.GetKeyDown(KeyCode.Return)) {
+			DialogueBoxHandler.Next();
+		}
+	}
+				
+	public void GetCharacters () {
+		List<CharacterData> newData = CharacterDatabase.AddAllCharacters();
+		for (int i = 0; i < newData.Count; i++) {
+			bool charFound = false;
+			if (i < characterData.Count && i < System.Enum.GetValues(typeof(Character)).Length) {
+				charFound = true;
+			}
+			if (charFound) {
+				for (int j = 0; j < newData[i].stats.Count; j++) {
+					bool statFound = false;
+					if (j < characterData[i].stats.Count && j < System.Enum.GetValues(typeof(Stat)).Length) {
+						statFound = true;
+					}
+					if (statFound) {
+						newData[i].stats[j] = characterData[i].stats[j];
+					}
+				}
+				for (int j = 0; j < newData[i].portraits.Count; j++) {
+					bool portraitFound = false;
+					if (j < characterData[i].portraits.Count && j < System.Enum.GetValues(typeof(Mood)).Length) {
+						portraitFound = true;
+					}
+					if (portraitFound) {
+						newData[i].portraits[j] = characterData[i].portraits[j];
+					}
+				}
+				newData[i].defaultPortrait = characterData[i].defaultPortrait;
+			}
+		}
+		characterData = newData;
+	}
+		
+}
+
 
 namespace JBirdEngine {
 
-	namespace RenUnity {
-
-		/// <summary>
-		/// RenUnity base class for viewing variables via editor script.
-		/// </summary>
-		public class RenUnityBase : MonoBehaviour { 
-		
-			public static RenUnityBase singleton;
-
-			public StoryBranchOrganizer singletonSBO;
-
-            #if UNITY_EDITOR
-			public string jsonFilePath = RenUnityFilePaths.jsonFilePath;
-			public string branchesFilePath = RenUnityFilePaths.branchesFilePath;
-            #else
-            public string jsonFilePath = string.Empty;
-			public string branchesFilePath = string.Empty;
-            #endif
-
-            public List<string> conditionalFlags = new List<string>();
-
-			public List<CharacterData> characterData = new List<CharacterData>();
-
-			public float writeSpeed = 0.1f;
-
-			public RenUnityMessageBox messageBoxPrefab;
-
-			public Canvas uiCanvas;
-
-			void Awake () {
-				if (singleton == null) {
-					singleton = this;
-				}
-				GetCharacters();
-				CharacterDatabase.characters = characterData;
-				DialogueBoxHandler.writeSpeed = writeSpeed;
-			}
-
-			void Start () {
-				//DialogueParser.ParseBranch(StoryBranchOrganizer.singleton.entries[0].thisBranch);
-			}
-
-			void Update () {
-				if (Input.GetKeyDown(KeyCode.Return)) {
-					DialogueBoxHandler.Next();
-				}
-			}
-				
-			public void GetCharacters () {
-				List<CharacterData> newData = CharacterDatabase.AddAllCharacters();
-				for (int i = 0; i < newData.Count; i++) {
-					bool charFound = false;
-					if (i < characterData.Count && i < System.Enum.GetValues(typeof(Character)).Length) {
-						charFound = true;
-					}
-					if (charFound) {
-						for (int j = 0; j < newData[i].stats.Count; j++) {
-							bool statFound = false;
-							if (j < characterData[i].stats.Count && j < System.Enum.GetValues(typeof(Stat)).Length) {
-								statFound = true;
-							}
-							if (statFound) {
-								newData[i].stats[j] = characterData[i].stats[j];
-							}
-						}
-						for (int j = 0; j < newData[i].portraits.Count; j++) {
-							bool portraitFound = false;
-							if (j < characterData[i].portraits.Count && j < System.Enum.GetValues(typeof(Mood)).Length) {
-								portraitFound = true;
-							}
-							if (portraitFound) {
-								newData[i].portraits[j] = characterData[i].portraits[j];
-							}
-						}
-						newData[i].defaultPortrait = characterData[i].defaultPortrait;
-					}
-				}
-				characterData = newData;
-			}
-		
-		}
+    namespace RenUnity {
 
 		/// <summary>
 		/// Branch class. Contains dialogue objects.
