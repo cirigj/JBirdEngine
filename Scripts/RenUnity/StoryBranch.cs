@@ -3,22 +3,15 @@ using System.Collections;
 #if UNITY_EDITOR
 using JBirdEngine.EditorHelper;
 #endif
+using JBirdEngine.RenUnity;
 
-namespace JBirdEngine {
+[CreateAssetMenu]
+public class StoryBranch : ScriptableObject {
 
-	namespace RenUnity {
-
-		[CreateAssetMenu]
-		public class StoryBranch : ScriptableObject {
-
-            #if UNITY_EDITOR
-            [ViewOnly]
-            #endif
-            public int cachedIndex = -1;
-			public Branch branch;
+    #if UNITY_EDITOR
+    [ViewOnly]
+    #endif
+    public int cachedIndex = -1;
+	public Branch branch;
 			
-		}
-
-	}
-
 }

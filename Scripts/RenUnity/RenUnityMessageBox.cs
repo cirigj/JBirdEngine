@@ -2,31 +2,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using JBirdEngine.RenUnity;
 
-namespace JBirdEngine {
+public class RenUnityMessageBox : MonoBehaviour {
 
-	namespace RenUnity {
+	public Text messageTextBox;
+	public Image characterPortrait;
+	public Text characterNameTextBox;
 
-		public class RenUnityMessageBox : MonoBehaviour {
+	public List<RenUnityOptionButton> buttons;
 
-			public Text messageTextBox;
-			public Image characterPortrait;
-			public Text characterNameTextBox;
+	public Animator animator;
 
-			public List<RenUnityOptionButton> buttons;
+	void Awake () {
+		animator = GetComponent<Animator>();
+	}
 
-			public Animator animator;
-
-			void Awake () {
-				animator = GetComponent<Animator>();
-			}
-
-			public void SwapPicture () {
-				DialogueBoxHandler.waitingForPicSwap = false;
-			}
-
-		}
-
+	public void SwapPicture () {
+		DialogueBoxHandler.waitingForPicSwap = false;
 	}
 
 }

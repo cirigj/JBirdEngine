@@ -6,7 +6,7 @@ using UnityEditor;
 
 #if UNITY_EDITOR
 [CustomEditor(typeof(JBirdNameGenerator))]
-public class NameGeneratorEditor : Editor {
+public class JBirdNameGeneratorEditor : Editor {
 
 	JBirdNameGenerator targetNameGen;
 	string newName;
