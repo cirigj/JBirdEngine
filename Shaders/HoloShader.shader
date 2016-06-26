@@ -4,7 +4,7 @@
 		_Hue ("Hue", Range(0,360)) = 0
 		_HueShift ("Hue Shift Rate", Float) = 0
 		_Alpha ("Alpha", Range(0,1)) = 1
-		_HoloTex ("Albedo (RGB)", 2D) = "white" {}
+		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 		_Glossiness ("Smoothness", Range(0,1)) = 1
 		_Metallic ("Metallic", Range(0,1)) = 0
 		_Lines ("CRT Lines", Float) = 20
@@ -17,7 +17,7 @@
 	SubShader {
 		Tags { "Queue"="Transparent+10" "RenderType" = "Transparent" }
 		LOD 200
-		GrabPass { "_HoloTex" }
+		GrabPass { "_MainTex" }
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types
 		#pragma surface surf Standard fullforwardshadows alpha
@@ -25,10 +25,10 @@
 		// Use shader model 3.0 target, to get nicer looking lighting
 		#pragma target 3.0
 
-		sampler2D _HoloTex;
+		sampler2D _MainTex;
 
 		struct Input {
-			float2 uv_HoloTex;
+			float2 uv_MainTex;
 		};
 
 		half _Glossiness;
@@ -50,13 +50,13 @@
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
 			// Albedo comes from a texture tinted by color
-			float2 newUV = float2(IN.uv_HoloTex.x, IN.uv_HoloTex.y);
-			fixed4 c = tex2D (_HoloTex, newUV); //* _Color;
+			float2 newUV = float2(IN.uv_MainTex.x, IN.uv_MainTex.y);
+			fixed4 c = tex2D (_MainTex, newUV); //* _Color;
 			//convert tex color to HSV
 			float cmax = max(max(c.r, max(c.g, c.b)), .004);
 			float cmin = max(min(c.r, min(c.g, c.b)), .004);
 			float s = (cmax - cmin) / cmax;
-			float v = cmax + fmod((float)IN.uv_HoloTex.y, 1 / _Lines);
+			float v = cmax + fmod((float)IN.uv_MainTex.y, 1 / _Lines);
 			//convert to RGB
 			_Hue = fmod(_Hue + _Time.y * _HueShift, 360);
 			float R = saturate(abs((_Hue / 360) * 6 - 3) - 1);
@@ -67,7 +67,7 @@
 			o.Albedo = endColor.rgb;
 			o.Smoothness = _Glossiness;
 			o.Metallic = _Metallic;
-			o.Alpha = saturate(_Alpha + _FlickerAlpha * sin(_Time.y * _FlickerRate) + saturate(_ScanLineAlpha * sign(-abs(fmod(IN.uv_HoloTex.y - (_Time.y + 100) / _ScanLineTime, 1)) + _ScanLineSize)));
+			o.Alpha = saturate(_Alpha + _FlickerAlpha * sin(_Time.y * _FlickerRate) + saturate(_ScanLineAlpha * sign(-abs(fmod(IN.uv_MainTex.y - (_Time.y + 100) / _ScanLineTime, 1)) + _ScanLineSize)));
 		}
 		ENDCG
 	} 
