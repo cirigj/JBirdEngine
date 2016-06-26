@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿// uncomment the following line to use this script
+//#define JBIRDVR
+
+#if JBIRDVR
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -229,3 +233,4 @@ public class ViveInputHandler : MonoBehaviour {
     }
 
 }
+#endif
