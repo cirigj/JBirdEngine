@@ -241,7 +241,43 @@ namespace JBirdEngine {
             return temp;
         }
 
-	}
+        /// <summary>
+        /// Removes the item from the list, but leaves an empty slot in its place with the default value.
+        /// </summary>
+        /// <typeparam name="T">The type of item stored in the list.</typeparam>
+        /// <param name="passedList">The list to remove from.</param>
+        /// <param name="item">The item to remove.</param>
+        /// <returns></returns>
+        public static bool RemoveToDefault<T> (this List<T> passedList, T item) {
+            if (passedList.Contains(item)) {
+                passedList[passedList.IndexOf(item)] = default(T);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Adds the item to the first empty slot in the list (empty slot defined by the default value).
+        /// </summary>
+        /// <typeparam name="T">The type of item stored in the list (must inherit from class).</typeparam>
+        /// <param name="passedList">The list to add to.</param>
+        /// <param name="item">The item to add.</param>
+        /// <param name="expandList">If false, won't expand the list (defaults to true).</param>
+        /// <returns></returns>
+        public static bool AddToFirstEmpty<T> (this List<T> passedList, T item, bool expandList = true) where T : class {
+            for (int i = 0; i < passedList.Count; i++) {
+                if (passedList[i] == default(T)) {
+                    passedList[i] = item;
+                    return true;
+                }
+            }
+            if (expandList) {
+                passedList.Add(item);
+                return true;
+            }
+            return false;
+        }
+
+    }
 
 	/// <summary>
 	/// Contains helper functions for char type.
