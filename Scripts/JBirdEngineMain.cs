@@ -72,6 +72,13 @@ namespace JBirdEngine {
 	/// </summary>
 	public static class EnumHelper {
 
+        /// <summary>
+        /// Attribute for drawing an enum as a mask field in inspector.
+        /// </summary>
+        public class EnumFlagsAttribute : PropertyAttribute {
+            public EnumFlagsAttribute () { }
+        }
+
 		/// <summary>
 		/// Returns an enum that is a combination of the given flags.
 		/// </summary>
@@ -135,7 +142,7 @@ namespace JBirdEngine {
 			if (!typeof(T).IsEnum) {
 				throw new ArgumentException ("ContainsFlag<T>(): 'T' must be of type 'enum'");
 			}
-			return (Convert.ToInt32(flag) & Convert.ToInt32(checkFor)) == Convert.ToInt32(checkFor);
+            return (Convert.ToInt32(flag) & Convert.ToInt32(checkFor)) == Convert.ToInt32(checkFor);
 		}
 
         /// <summary>
@@ -275,6 +282,21 @@ namespace JBirdEngine {
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Adds the item to the beginning of the list.
+        /// </summary>
+        /// <typeparam name="T">The type of item stored in the list.</typeparam>
+        /// <param name="passedList">The list to add to.</param>
+        /// <param name="item">The item to add.</param>
+        public static void AddToFront<T> (this List<T> passedList, T item) {
+            List<T> tempList = new List<T>(passedList);
+            passedList.Clear();
+            passedList.Add(item);
+            foreach (T entry in tempList) {
+                passedList.Add(entry);
+            }
         }
 
     }

@@ -4,6 +4,7 @@ using System.Collections;
 using UnityEditor;
 #endif
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(LazerPixel))]
 public class LazerPixelEditor : Editor {
 
@@ -20,3 +21,4 @@ public class LazerPixelEditor : Editor {
     }
 
 }
+#endif

@@ -1,16 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
-#if UNITY_EDITOR
 using JBirdEngine.EditorHelper;
-#endif
 using JBirdEngine;
 
 [System.Serializable]
 public class JBirdRopeNode : MonoBehaviour {
 
-    #if UNITY_EDITOR
     [ViewOnly]
-    #endif
     [SerializeField]
 	private JBirdRope _rope;
 	public JBirdRope rope {
@@ -24,9 +20,7 @@ public class JBirdRopeNode : MonoBehaviour {
 		}
 	}
 
-    #if UNITY_EDITOR
     [ViewOnly]
-    #endif
     [SerializeField]
 	private JBirdRopeNode _prev;
 	public JBirdRopeNode prev {
@@ -43,9 +37,7 @@ public class JBirdRopeNode : MonoBehaviour {
 		}
 	}
 
-    #if UNITY_EDITOR
     [ViewOnly]
-    #endif
     [SerializeField]
 	private JBirdRopeNode _next;
 	public JBirdRopeNode next {

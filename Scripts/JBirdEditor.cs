@@ -17,11 +17,13 @@ namespace JBirdEngine {
 		/// <summary>
 		/// View only attribute (for greying out in inspector).
 		/// </summary>
-		public class ViewOnlyAttribute : PropertyAttribute { }
+		public class ViewOnlyAttribute : PropertyAttribute {
+            public ViewOnlyAttribute () { }
+        }
 
 		#if UNITY_EDITOR
 		[CustomPropertyDrawer(typeof(ViewOnlyAttribute))]
-		public class ReadOnlyDrawer : PropertyDrawer {
+		public class ViewOnlyDrawer : PropertyDrawer {
 			public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
 				return EditorGUI.GetPropertyHeight(property, label, true);
 			}
@@ -33,8 +35,17 @@ namespace JBirdEngine {
 			}
 		}
 
-		#if COLOR_LIB
-		[CustomPropertyDrawer(typeof(ColorHelper.ColorHSVRGB))]
+        [CustomPropertyDrawer(typeof(EnumHelper.EnumFlagsAttribute))]
+        public class EnumFlagsPropertyDrawer : PropertyDrawer {
+
+            public override void OnGUI (Rect position, SerializedProperty property, GUIContent label) {
+                property.intValue = EditorGUI.MaskField(position, label, property.intValue, property.enumNames);
+            }
+
+        }
+
+        #if COLOR_LIB
+        [CustomPropertyDrawer(typeof(ColorHelper.ColorHSVRGB))]
 		public class ColorHSVRGBDrawer : PropertyDrawer {
 
 			public override float GetPropertyHeight (SerializedProperty property, GUIContent label) {
