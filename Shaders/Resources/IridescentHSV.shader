@@ -35,13 +35,13 @@
 		half _Pow;
 
 		half getAngleBetweenVectors(fixed3 vec1, fixed3 vec2) {
-			return (acos(clamp(dot(vec1, vec2), -1, 1)) * 57.29578) / 180;
+			return clamp((acos(clamp(dot(vec1, vec2), -1, 1)) * 57.29578) / 180, 0, 1);
 		}
 
 		half getHue(half3 color) {
 			half hue;
 			half cMax = max(color.r, max(color.g, color.b));
-			half cMin = min(color.r, max(color.g, color.b));
+			half cMin = min(color.r, min(color.g, color.b));
 			half delta = cMax - cMin;
 			//HUE
 			if (delta == 0) {
@@ -81,7 +81,7 @@
 
 		half getSat(half3 color) {
 			half cMax = max(color.r, max(color.g, color.b));
-			half cMin = min(color.r, max(color.g, color.b));
+			half cMin = min(color.r, min(color.g, color.b));
 			half delta = cMax - cMin;
 			if (cMax == 0) {
 				return 0;
@@ -134,7 +134,14 @@
 		half getLerpHue(half t) {
 			half startHue = getHue(_StartColor);
 			half endHue = getHue(_EndColor);
-			return shiftHue(startHue, (endHue - startHue) * t);
+			half hueDiff = endHue - startHue;
+			if (hueDiff > 180) {
+				hueDiff -= 360;
+			}
+			if (hueDiff < -180) {
+				hueDiff += 360;
+			}
+			return shiftHue(startHue, hueDiff * 2 * t);
 		}
 
 		half getLerpSat(half t) {
