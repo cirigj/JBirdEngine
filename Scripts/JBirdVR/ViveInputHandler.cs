@@ -23,11 +23,12 @@ public class ViveInputHandler : MonoBehaviour {
         DPad_Right = 5,
         DPad_Down = 6,
         A = 7,
-        Touchpad = 8,
-        Trigger = 9,
-        Axis2 = 10,
-        Axis3 = 11,
-        Axis4 = 12,
+        Proximity_Sensor = 8,
+        Touchpad = 9,
+        Trigger = 10,
+        Axis2 = 11,
+        Axis3 = 12,
+        Axis4 = 13,
     }
 
     private class InputAxis {
@@ -105,7 +106,7 @@ public class ViveInputHandler : MonoBehaviour {
         for (int i = 0; i <= 7; i++) {
             axes.Add(new InputAxis((Valve.VR.EVRButtonId)i));
         }
-        for (int i = 32; i <= 36; i++) {
+        for (int i = 31; i <= 36; i++) {
             axes.Add(new InputAxis((Valve.VR.EVRButtonId)i));
         }
     }
