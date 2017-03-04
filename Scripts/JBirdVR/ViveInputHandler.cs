@@ -1,10 +1,11 @@
 ﻿// uncomment the following line to use this script
-//#define JBIRDVR
+#define JBIRDVR
 
 #if JBIRDVR
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Events;
 
 public class ViveInputHandler : MonoBehaviour {
 
@@ -45,6 +46,19 @@ public class ViveInputHandler : MonoBehaviour {
         }
     }
 
+    private enum AxisMode {
+        pressed,
+        held,
+        released,
+    }
+
+    [System.Serializable]
+    private class AxisEvent {
+        public AxisID axisID;
+        public AxisMode mode;
+        public UnityEvent axisEvent;
+    }
+
     [SerializeField]
     [Header("Set to left or right to gain static reference:")]
     private ControllerID _controllerID;
@@ -67,9 +81,12 @@ public class ViveInputHandler : MonoBehaviour {
         }
     }
 
-    bool inputCheckedThisFrame = false;
+    [SerializeField]
+    private List<AxisEvent> axisEvents;
 
-    List<InputAxis> axes;
+    private bool inputCheckedThisFrame = false;
+
+    private List<InputAxis> axes;
 
     void Awake () {
         trackedObj = GetComponent<SteamVR_TrackedObject>();
@@ -93,6 +110,32 @@ public class ViveInputHandler : MonoBehaviour {
         else if (controllerID == ControllerID.unbound) {
             Debug.LogWarningFormat("ViveInputHandler: Controller '{0}' is currently set to 'unbound' and will not be tracked.", gameObject.name);
         }
+    }
+
+    void Update () {
+        foreach (AxisEvent e in axisEvents) {
+            switch (e.mode) {
+                case AxisMode.pressed:
+                    if (GetButtonPressed(e.axisID, controllerID)) {
+                        e.axisEvent.Invoke();
+                    }
+                    break;
+                default: case AxisMode.held:
+                    if (GetButtonHeld(e.axisID, controllerID)) {
+                        e.axisEvent.Invoke();
+                    }
+                    break;
+                case AxisMode.released:
+                    if (GetButtonReleased(e.axisID, controllerID)) {
+                        e.axisEvent.Invoke();
+                    }
+                    break;
+            }
+        }
+    }
+
+    public void Test () {
+        Debug.Log("TEST");
     }
 
     void LateUpdate () {
