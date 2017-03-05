@@ -134,10 +134,6 @@ public class ViveInputHandler : MonoBehaviour {
         }
     }
 
-    public void Test () {
-        Debug.Log("TEST");
-    }
-
     void LateUpdate () {
         if (inputCheckedThisFrame) {
             ResetInput();
