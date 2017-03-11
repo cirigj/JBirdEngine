@@ -333,5 +333,16 @@ namespace JBirdEngine {
 		}
 
 	}
+
+    /// <summary>
+    /// Contains helper functions for Vector3 type.
+    /// </summary>
+    public static class Vector3Helper {
+
+        public static Vector3 Midpoint (Vector3 v1, Vector3 v2) {
+            return (v1 + v2) / 2f;
+        }
+
+    }
 	
 }
