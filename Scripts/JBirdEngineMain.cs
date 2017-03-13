@@ -27,6 +27,19 @@ namespace JBirdEngine {
             return n * IntPow(n, p - 1);
         }
 
+        /// <summary>
+        /// Returns n raised to the p power.
+        /// </summary>
+        /// <param name="n">Base.</param>
+        /// <param name="p">Power.</param>
+        /// <returns>n to the p</returns>
+        public static float IntPow (float n, int p) {
+            if (p == 0) {
+                return 1;
+            }
+            return n * IntPow(n, p - 1);
+        }
+
     }
 
 	/// <summary>
@@ -334,13 +347,131 @@ namespace JBirdEngine {
 
 	}
 
+    namespace AngleVector {
+
+        /// <summary>
+        /// A Vector3 where the x and y components are treated as azimuth and elevation angles, respectively.
+        /// Can be implicitly cast as a Vector3.
+        /// </summary>
+        public class AngleVector3 {
+
+            public AngleVector3 (Vector3 v) {
+                vec = v;
+            }
+
+            Vector3 vec;
+
+            public float azimuth { get { return vec.x % 360f; } set { vec.x = value % 360f; } }
+            public float elevation { get { return vec.y % 360f; } set { vec.y = value % 360f; } }
+            public float magnitude { get { return vec.z; } set { vec.z = value; } }
+
+            public float x { get { return vec.x % 360f; } set { vec.x = value % 360f; } }
+            public float y { get { return vec.y % 360f; } set { vec.y = value % 360f; } }
+            public float z { get { return vec.z; } set { vec.z = value; } }
+
+            public static implicit operator Vector3 (AngleVector3 aVec) {
+                return aVec.vec;
+            }
+        }
+    }
+
     /// <summary>
     /// Contains helper functions for Vector3 type.
     /// </summary>
-    public static class Vector3Helper {
+    public static class VectorHelper {
 
+        /// <summary>
+        /// Returns the midpoint between two vectors.
+        /// </summary>
+        /// <param name="v1">The first vector.</param>
+        /// <param name="v2">The second vector.</param>
+        /// <returns>The midpoint of the two vectors.</returns>
         public static Vector3 Midpoint (Vector3 v1, Vector3 v2) {
             return (v1 + v2) / 2f;
+        }
+
+        /// <summary>
+        /// Returns a vector created via azimuth and elevation angles relative to the given directional vectors.
+        /// </summary>
+        /// <param name="azimuth">Angle around the y-axis.</param>
+        /// <param name="elevation">Angle between the desired vector and the xz-plane.</param>
+        /// <param name="up">The local positive y direction.</param>
+        /// <param name="forward">The local positive z direction.</param>
+        /// <returns></returns>
+        public static Vector3 FromAzimuthAndElevation (float azimuth, float elevation, Vector3 up, Vector3 forward) {
+            Vector3 compoundVec = Vector3.zero;
+            up.Normalize();
+            forward.Normalize();
+            // relative x component
+            compoundVec += Mathf.Sin(Mathf.Deg2Rad * azimuth) * Mathf.Cos(Mathf.Deg2Rad * elevation) * Vector3.Cross(up, forward);
+            // relative y component
+            compoundVec += Mathf.Sin(Mathf.Deg2Rad * elevation) * up;
+            // relative z component
+            compoundVec += Mathf.Cos(Mathf.Deg2Rad * azimuth) * Mathf.Cos(Mathf.Deg2Rad * elevation) * forward;
+            return compoundVec;
+        }
+
+        /// <summary>
+        /// Returns a vector created via azimuth and elevation angles relative to the given directional vectors.
+        /// </summary>
+        /// <param name="angles">The set of angles to for the calculation.</param>
+        /// <param name="up">The local positive y direction.</param>
+        /// <param name="forward">The local positive z direction.</param>
+        /// <returns></returns>
+        public static Vector3 FromAzimuthAndElevation (AngleVector.AngleVector3 angles, Vector3 up, Vector3 forward) {
+            Vector3 compoundVec = Vector3.zero;
+            up.Normalize();
+            forward.Normalize();
+            // relative x component
+            compoundVec += Mathf.Sin(Mathf.Deg2Rad * angles.azimuth) * Mathf.Cos(Mathf.Deg2Rad * angles.elevation) * Vector3.Cross(up, forward);
+            // relative y component
+            compoundVec += Mathf.Sin(Mathf.Deg2Rad * angles.elevation) * up;
+            // relative z component
+            compoundVec += Mathf.Cos(Mathf.Deg2Rad * angles.azimuth) * Mathf.Cos(Mathf.Deg2Rad * angles.elevation) * forward;
+            return compoundVec;
+        }
+
+        /// <summary>
+        /// Get the elevation angle to this vector from a reference point.
+        /// </summary>
+        /// <param name="position">The vector to find the elevation of.</param>
+        /// <param name="center">The reference point.</param>
+        /// <param name="up">The normal of the plane to find the elevation from.</param>
+        /// <returns>The elevation angle.</returns>
+        public static float GetElevation (this Vector3 position, Vector3 center, Vector3 up) {
+            return Mathf.Asin(Vector3.Dot((position - center).normalized, up.normalized)) * Mathf.Rad2Deg;
+        }
+
+        /// <summary>
+        /// Get the azimuth angle to this vector from a reference point.
+        /// </summary>
+        /// <param name="position">The vector to find the azimuth of.</param>
+        /// <param name="center">The reference point.</param>
+        /// <param name="up">The normal of the reference plane.</param>
+        /// <param name="forward">The forward direction to find the azimuth from in degrees.</param>
+        /// <returns>The azimuth angle.</returns>
+        public static float GetAzimuth (this Vector3 position, Vector3 center, Vector3 up, Vector3 forward) {
+            float elevation;
+            return position.GetAzimuth(center, up, forward, out elevation);
+        }
+
+        /// <summary>
+        /// Get the azimuth angle to this vector from a reference point.
+        /// </summary>
+        /// <param name="position">The vector to find the azimuth of.</param>
+        /// <param name="center">The reference point.</param>
+        /// <param name="up">The normal of the reference plane.</param>
+        /// <param name="forward">The forward direction to find the azimuth from in degrees.</param>
+        /// <param name="elevation">Optional out parameter to get the elevation value used during azimuth calculation.</param>
+        /// <returns>The azimuth angle.</returns>
+        public static float GetAzimuth (this Vector3 position, Vector3 center, Vector3 up, Vector3 forward, out float elevation) {
+            elevation = position.GetElevation(center, up);
+            Vector3 right = Vector3.Cross(up.normalized, forward.normalized).normalized;
+            float azimuth = Mathf.Acos(Vector3.Dot((position - center).normalized, forward.normalized) / Mathf.Cos(elevation * Mathf.Deg2Rad)) * Mathf.Rad2Deg;
+            if (Vector3.Dot((position - center).normalized, right) > 0f) {
+                azimuth = 360f - azimuth;
+            }
+            return azimuth;
         }
 
     }
