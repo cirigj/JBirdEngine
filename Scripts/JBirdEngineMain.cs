@@ -347,7 +347,7 @@ namespace JBirdEngine {
 
 	}
 
-    namespace AngleVector {
+    namespace Angles {
 
         /// <summary>
         /// A Vector3 where the x and y components are treated as azimuth and elevation angles, respectively.
@@ -356,13 +356,12 @@ namespace JBirdEngine {
         public class AngleVector3 {
 
             public AngleVector3 (Vector3 v) {
-                vec = v;
+                vec = new Vector3(v.x % 360f, v.y % 360f, v.z);
             }
 
-            Vector3 vec;
-
-            public float azimuth { get { return vec.x % 360f; } set { vec.x = value % 360f; } }
-            public float elevation { get { return vec.y % 360f; } set { vec.y = value % 360f; } }
+            private Vector3 vec;
+            public Angle azimuth { get { return vec.x; } set { vec.x = value; } }
+            public Angle elevation { get { return vec.y; } set { vec.y = value; } }
             public float magnitude { get { return vec.z; } set { vec.z = value; } }
 
             public float x { get { return vec.x % 360f; } set { vec.x = value % 360f; } }
@@ -372,7 +371,34 @@ namespace JBirdEngine {
             public static implicit operator Vector3 (AngleVector3 aVec) {
                 return aVec.vec;
             }
+
+            public static implicit operator AngleVector3 (Vector3 vec) {
+                return new AngleVector3(vec);
+            }
         }
+
+        /// <summary>
+        /// A float that automatically uses modulo 360.
+        /// Can be implicitly cast as a float.
+        /// </summary>
+        public class Angle {
+
+            public Angle (float f) {
+                val = f;
+            }
+
+            private float _val;
+            public float val { get { return _val % 360f; } set { _val = value % 360f; } }
+
+            public static implicit operator float (Angle angle) {
+                return angle.val;
+            }
+
+            public static implicit operator Angle (float f) {
+                return new Angle(f);
+            }
+        }
+
     }
 
     /// <summary>
@@ -418,7 +444,7 @@ namespace JBirdEngine {
         /// <param name="up">The local positive y direction.</param>
         /// <param name="forward">The local positive z direction.</param>
         /// <returns></returns>
-        public static Vector3 FromAzimuthAndElevation (AngleVector.AngleVector3 angles, Vector3 up, Vector3 forward) {
+        public static Vector3 FromAzimuthAndElevation (Angles.AngleVector3 angles, Vector3 up, Vector3 forward) {
             Vector3 compoundVec = Vector3.zero;
             up.Normalize();
             forward.Normalize();
