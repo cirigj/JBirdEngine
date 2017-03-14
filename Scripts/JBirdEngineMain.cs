@@ -353,23 +353,26 @@ namespace JBirdEngine {
         /// A Vector3 where the x and y components are treated as azimuth and elevation angles, respectively.
         /// Can be implicitly cast as a Vector3.
         /// </summary>
+        [System.Serializable]
         public class AngleVector3 {
 
             public AngleVector3 (Vector3 v) {
                 vec = new Vector3(v.x % 360f, v.y % 360f, v.z);
             }
 
+            [SerializeField]
             private Vector3 vec;
+
             public Angle azimuth { get { return vec.x; } set { vec.x = value; } }
             public Angle elevation { get { return vec.y; } set { vec.y = value; } }
             public float magnitude { get { return vec.z; } set { vec.z = value; } }
-
+            
             public float x { get { return vec.x % 360f; } set { vec.x = value % 360f; } }
             public float y { get { return vec.y % 360f; } set { vec.y = value % 360f; } }
             public float z { get { return vec.z; } set { vec.z = value; } }
-
+            
             public static implicit operator Vector3 (AngleVector3 aVec) {
-                return aVec.vec;
+                return new Vector3(aVec.vec.x % 360f, aVec.vec.y % 360f, aVec.vec.z);
             }
 
             public static implicit operator AngleVector3 (Vector3 vec) {
@@ -385,12 +388,14 @@ namespace JBirdEngine {
         /// A float that automatically uses modulo 360.
         /// Can be implicitly cast as a float.
         /// </summary>
+        [System.Serializable]
         public class Angle {
 
             public Angle (float f) {
                 val = f;
             }
 
+            [SerializeField]
             private float _val;
             public float val { get { return _val % 360f; } set { _val = value % 360f; } }
 

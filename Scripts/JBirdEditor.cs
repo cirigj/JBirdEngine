@@ -212,8 +212,62 @@ namespace JBirdEngine {
 		}
 		#endif
 
-		#endif
+        [CustomPropertyDrawer(typeof(Angles.AngleVector3))]
+        public class AngleVector3Drawer : PropertyDrawer {
 
-	}
+            public override float GetPropertyHeight (SerializedProperty property, GUIContent label) {
+                return base.GetPropertyHeight(property, label) * 1f;
+            }
+
+            public override void OnGUI (Rect position, SerializedProperty property, GUIContent label) {
+                EditorGUI.BeginProperty(position, label, property);
+
+                EditorGUIUtility.labelWidth = 0f;
+                Rect contentPosition = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
+
+                EditorGUI.indentLevel = 0;
+
+                Rect xRect = new Rect(contentPosition.x, contentPosition.y, contentPosition.width * .3f, contentPosition.height);
+                Rect yRect = new Rect(contentPosition.x + contentPosition.width * .35f, contentPosition.y, contentPosition.width * .3f, contentPosition.height);
+                Rect zRect = new Rect(contentPosition.x + contentPosition.width * .7f, contentPosition.y, contentPosition.width * .3f, contentPosition.height);
+
+                EditorGUIUtility.labelWidth = 14f;
+
+                EditorGUI.PropertyField(xRect, property.FindPropertyRelative("vec.x"), new GUIContent("\u03B1"));
+                EditorGUI.PropertyField(yRect, property.FindPropertyRelative("vec.y"), new GUIContent("\u03B2"));
+                EditorGUI.PropertyField(zRect, property.FindPropertyRelative("vec.z"), new GUIContent("R"));
+
+                EditorGUI.EndProperty();
+            }
+        }
+
+        [CustomPropertyDrawer(typeof(Angles.Angle))]
+        public class AngleDrawer : PropertyDrawer {
+
+            public override float GetPropertyHeight (SerializedProperty property, GUIContent label) {
+                return base.GetPropertyHeight(property, label) * 1f;
+            }
+
+            public override void OnGUI (Rect position, SerializedProperty property, GUIContent label) {
+                EditorGUI.BeginProperty(position, label, property);
+
+                EditorGUIUtility.labelWidth = 0f;
+                Rect contentPosition = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
+
+                EditorGUI.indentLevel = 0;
+
+                Rect fRect = new Rect(contentPosition.x, contentPosition.y, contentPosition.width, contentPosition.height);
+
+                EditorGUIUtility.labelWidth = 14f;
+
+                EditorGUI.PropertyField(fRect, property.FindPropertyRelative("_val"), new GUIContent("\u03B8"));
+
+                EditorGUI.EndProperty();
+            }
+        }
+
+#endif
+
+    }
 
 }
