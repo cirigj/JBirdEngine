@@ -375,6 +375,10 @@ namespace JBirdEngine {
             public static implicit operator AngleVector3 (Vector3 vec) {
                 return new AngleVector3(vec);
             }
+
+            public Vector3 ToVector3 () {
+                return VectorHelper.FromAzimuthAndElevation(this) * vec.magnitude;
+            }
         }
 
         /// <summary>
@@ -417,13 +421,32 @@ namespace JBirdEngine {
         }
 
         /// <summary>
-        /// Returns a vector created via azimuth and elevation angles relative to the given directional vectors.
+        /// Returns a unit vector created via azimuth and elevation angles relative to the world coordinates.
+        /// </summary>
+        /// <param name="azimuth">Angle around the y-axis.</param>
+        /// <param name="elevation">Angle between the desired vector and the xz-plane.</param>
+        /// <returns>A unit vector with the given azimuth and elevation angles.</returns>
+        public static Vector3 FromAzimuthAndElevation (float azimuth, float elevation) {
+            return FromAzimuthAndElevation(azimuth, elevation, Vector3.up, Vector3.forward);
+        }
+
+        /// <summary>
+        /// Returns a unit vector created via azimuth and elevation angles relative to the given directional vectors.
+        /// </summary>
+        /// <param name="angles">The set of angles to for the calculation.</param>
+        /// <returns>A unit vector with the given azimuth and elevation angles.</returns>
+        public static Vector3 FromAzimuthAndElevation (Angles.AngleVector3 angles) {
+            return FromAzimuthAndElevation(angles, Vector3.up, Vector3.forward);
+        }
+
+        /// <summary>
+        /// Returns a unit vector created via azimuth and elevation angles relative to the given directional vectors.
         /// </summary>
         /// <param name="azimuth">Angle around the y-axis.</param>
         /// <param name="elevation">Angle between the desired vector and the xz-plane.</param>
         /// <param name="up">The local positive y direction.</param>
         /// <param name="forward">The local positive z direction.</param>
-        /// <returns></returns>
+        /// <returns>A unit vector with the given azimuth and elevation angles.</returns>
         public static Vector3 FromAzimuthAndElevation (float azimuth, float elevation, Vector3 up, Vector3 forward) {
             Vector3 compoundVec = Vector3.zero;
             up.Normalize();
@@ -438,12 +461,12 @@ namespace JBirdEngine {
         }
 
         /// <summary>
-        /// Returns a vector created via azimuth and elevation angles relative to the given directional vectors.
+        /// Returns a unit vector created via azimuth and elevation angles relative to the given directional vectors.
         /// </summary>
         /// <param name="angles">The set of angles to for the calculation.</param>
         /// <param name="up">The local positive y direction.</param>
         /// <param name="forward">The local positive z direction.</param>
-        /// <returns></returns>
+        /// <returns>A unit vector with the given azimuth and elevation angles.</returns>
         public static Vector3 FromAzimuthAndElevation (Angles.AngleVector3 angles, Vector3 up, Vector3 forward) {
             Vector3 compoundVec = Vector3.zero;
             up.Normalize();
