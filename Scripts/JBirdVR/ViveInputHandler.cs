@@ -1,5 +1,5 @@
 ﻿// uncomment the following line to use this script
-#define JBIRDVR
+//#define JBIRDVR
 
 #if JBIRDVR
 using UnityEngine;
