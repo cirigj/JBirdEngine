@@ -15,14 +15,18 @@ namespace JBirdEngine {
 
 	namespace EditorHelper {
 
-		/// <summary>
-		/// View only attribute (for greying out in inspector).
-		/// </summary>
-		public class ViewOnlyAttribute : PropertyAttribute {
+        /// <summary>
+        /// View only attribute (for greying out in inspector).
+        /// </summary>
+        [System.AttributeUsage(System.AttributeTargets.Field, Inherited = true, AllowMultiple = true)]
+        public class ViewOnlyAttribute : PropertyAttribute {
+            /// <summary>
+            /// View only attribute (for greying out in inspector).
+            /// </summary>
             public ViewOnlyAttribute () { }
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
 
         public delegate Vector3 PositionHandleDelegate (Vector3 v3, Quaternion quat);
         public delegate bool ButtonHandleCapDelegate (Vector3 v3, Quaternion quat, float f1, float f2, Handles.CapFunction capFunc);

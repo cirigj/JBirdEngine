@@ -67,7 +67,7 @@ namespace JBirdEngine {
         /// <param name="instance">This instance.</param>
         /// <param name="singleton">Singleton variable.</param>
         /// <typeparam name="T">Must inherit from Component.</typeparam>
-        public static void ManageSingleton<T> (T instance, ref T singleton) where T : Component {
+        public static void Manage<T> (T instance, ref T singleton) where T : Component {
             if (singleton == null) {
                 singleton = instance;
             }
@@ -78,7 +78,14 @@ namespace JBirdEngine {
             }
         }
 
-	}
+        public static T Check<T> (ref T instance) where T : Component {
+            if (JDebug.showMessages && !instance) {
+                Debug.LogWarningFormat("{0}: Singleton instance not set!", typeof(T).Name);
+            }
+            return instance;
+        }
+
+    }
 
 	/// <summary>
 	/// Contains functions for easily making enums into flags.
