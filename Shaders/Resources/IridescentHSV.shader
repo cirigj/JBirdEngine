@@ -1,11 +1,13 @@
 ﻿Shader "Custom/IridescentHSV" {
 	Properties {
-		_Color ("Color", Color) = (1,1,1,1)
-		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
-		_StartColor ("Starting Color", Color) = (1,1,1,1)
-		_EndColor ("Ending Color", Color) = (1,1,1,1)
+		_StartHue ("Starting Color", Range(0,359)) = 0.0
+		_EndHue ("Ending Color", Range(0,359)) = 0.0
+		_StartSat ("Starting Saturation", Range(0,1)) = 0.0
+		_EndSat("Ending Saturation", Range(0,1)) = 0.0
+		_StartVal("Starting Value", Range(0,1)) = 0.0
+		_EndVal("Ending Value", Range(0,1)) = 0.0
 		_Pow ("Power", Range(.01,10)) = .5
 	}
 	SubShader {
@@ -19,19 +21,19 @@
 		// Use shader model 3.0 target, to get nicer looking lighting
 		#pragma target 3.0
 
-		sampler2D _MainTex;
-
 		struct Input {
-			float2 uv_MainTex;
 			float3 viewDir;
 			float3 worldNormal;
 		};
 
 		half _Glossiness;
 		half _Metallic;
-		fixed4 _Color;
-		fixed4 _StartColor;
-		fixed4 _EndColor;
+		half _StartHue;
+		half _EndHue;
+		half _StartSat;
+		half _EndSat;
+		half _StartVal;
+		half _EndVal;
 		half _Pow;
 
 		half getAngleBetweenVectors(fixed3 vec1, fixed3 vec2) {
@@ -65,14 +67,14 @@
 		}
 
 		half shiftHue(half startHue, half degrees) {
-			startHue += degrees;
-			if (startHue > 360) {
-				startHue -= 360;
+			half newHue = startHue + degrees;
+			if (newHue > 360) {
+				newHue -= 360;
 			}
-			if (startHue < 0) {
-				startHue += 360;
+			if (newHue < 0) {
+				newHue += 360;
 			}
-			return startHue;
+			return newHue;
 		}
 
 		half getVal(half3 color) {
@@ -132,8 +134,8 @@
 		}
 
 		half getLerpHue(half t) {
-			half startHue = getHue(_StartColor);
-			half endHue = getHue(_EndColor);
+			half startHue = _StartHue;
+			half endHue = _EndHue;
 			half hueDiff = endHue - startHue;
 			if (hueDiff > 180) {
 				hueDiff -= 360;
@@ -141,15 +143,15 @@
 			if (hueDiff < -180) {
 				hueDiff += 360;
 			}
-			return shiftHue(startHue, hueDiff * 2 * t);
+			return shiftHue(startHue, hueDiff * t);
 		}
 
 		half getLerpSat(half t) {
-			return lerp(getSat(_StartColor.rgb), getSat(_EndColor.rgb), t);
+			return lerp(_StartSat, _EndSat, t);
 		}
 
 		half getLerpVal(half t) {
-			return lerp(getVal(_StartColor.rgb), getVal(_EndColor.rgb), t);
+			return lerp(_StartVal, _EndVal, t);
 		}
 
 		half3 getColor(fixed3 vD, fixed3 wN) {
@@ -159,7 +161,7 @@
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
 			// Albedo comes from a texture tinted by color
-			fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
+			//fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
 			//o.Albedo = c.rgb;
 
 			half t = getAngleBetweenVectors(IN.viewDir, IN.worldNormal);
@@ -170,7 +172,7 @@
 			// Metallic and smoothness come from slider variables
 			o.Metallic = _Metallic;
 			o.Smoothness = _Glossiness;
-			o.Alpha = c.a;
+			o.Alpha = 1.0;
 		}
 		ENDCG
 	}
