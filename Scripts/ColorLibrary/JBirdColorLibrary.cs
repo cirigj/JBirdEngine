@@ -354,6 +354,10 @@ namespace JBirdEngine.ColorLibrary {
             get { return ColorHelper.ToColor(0xFF8C00); }
         }
 
+        public static Color maroon {
+            get { return ColorHelper.ToColor(0x800000); }
+        }
+
         public static Color chartreuseYellow {
             get { return ColorHelper.ToColor(0xDFFF00); }
         }
@@ -741,6 +745,11 @@ namespace JBirdEngine.ColorLibrary {
                 amount = a;
             }
 
+            public ColorHSVAmount (Color c, float a) {
+                colorHSV = c.ToHSV();
+                amount = a;
+            }
+
             public ColorHSVAmount (ColorHSVAmount cHSVA) {
                 colorHSV = cHSVA.colorHSV;
                 amount = cHSVA.amount;
@@ -955,6 +964,11 @@ namespace JBirdEngine.ColorLibrary {
                 rainbow.Add(colorHSV.ToColor());
             }
             return rainbow;
+        }
+
+        public static Color LerpHSV (Color c1, Color c2, float t) {
+            t = Mathf.Clamp01(t);
+            return MixColorsHSV(new ColorHSVAmount(c1, 1f - t), new ColorHSVAmount(c2, t));
         }
 
         /// <summary>
