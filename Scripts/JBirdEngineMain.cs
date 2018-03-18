@@ -535,6 +535,18 @@ namespace JBirdEngine {
             return azimuth;
         }
 
+        public static Vector3 NegateX (this Vector3 position) {
+            return new Vector3(-position.x, position.y, position.z);
+        }
+
+        public static Vector3 NegateY (this Vector3 position) {
+            return new Vector3(position.x, -position.y, position.z);
+        }
+
+        public static Vector3 NegateZ (this Vector3 position) {
+            return new Vector3(position.x, position.y, -position.z);
+        }
+
     }
 	
 }
