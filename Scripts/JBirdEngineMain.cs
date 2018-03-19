@@ -547,6 +547,18 @@ namespace JBirdEngine {
             return new Vector3(position.x, position.y, -position.z);
         }
 
+        public static Vector3 SetX (this Vector3 position, float val) {
+            return new Vector3(val, position.y, position.z);
+        }
+
+        public static Vector3 SetY (this Vector3 position, float val) {
+            return new Vector3(position.x, val, position.z);
+        }
+
+        public static Vector3 SetZ (this Vector3 position, float val) {
+            return new Vector3(position.x, position.y, val);
+        }
+
     }
 	
 }
