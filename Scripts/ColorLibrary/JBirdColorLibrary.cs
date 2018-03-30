@@ -445,6 +445,10 @@ namespace JBirdEngine.ColorLibrary {
     /// </summary>
     public static class ColorHelper {
 
+        public static Color ChangeAlpha (this Color c, float a) {
+            return new Color(c.r, c.g, c.b, a);
+        }
+
         /// <summary>
         /// A color that uses HSV instead of RGB. Can be converted to RGB using ToColor().
         /// </summary>
