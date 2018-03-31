@@ -532,6 +532,9 @@ namespace JBirdEngine {
             if (Vector3.Dot((position - center).normalized, right) > 0f) {
                 azimuth = 360f - azimuth;
             }
+            if (azimuth > 180f) {
+                azimuth -= 360f;
+            }
             return azimuth;
         }
 
