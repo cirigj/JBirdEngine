@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace JBirdEngine {
+namespace JBirdLib {
 
 	/// <summary>
 	/// Class containing Markov Chain implementations.

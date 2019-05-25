@@ -5,7 +5,7 @@ using UnityEditor;
 using System;
 #endif
 
-namespace JBirdEngine {
+namespace JBirdLib {
 
     namespace ColorLibrary {
 

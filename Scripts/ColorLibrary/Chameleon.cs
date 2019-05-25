@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using JBirdEngine.ColorLibrary;
+using JBirdLib.ColorLibrary;
 using System.Linq;
 
-namespace JBirdEngine {
+namespace JBirdLib {
 
     namespace ColorLibrary {
 

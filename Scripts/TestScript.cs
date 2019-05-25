@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using JBirdEngine;
-using JBirdEngine.ColorLibrary;
+using JBirdLib;
+using JBirdLib.ColorLibrary;
 
 public class TestScript : MonoBehaviour {
 
-	public JBirdEngine.ColorLibrary.ColorHelper.ColorHSVRGB hsvrgb;
-	public JBirdEngine.ColorLibrary.ColorHelper.ColorHSV hsv;
+	public JBirdLib.ColorLibrary.ColorHelper.ColorHSVRGB hsvrgb;
+	public JBirdLib.ColorLibrary.ColorHelper.ColorHSV hsv;
 	public Markov.NameGenerator nameGenerator;
 
 	[Range(0f, 1f)]
@@ -19,8 +19,8 @@ public class TestScript : MonoBehaviour {
 
 	public Color lumaChromaColor;
 
-	public JBirdEngine.ColorLibrary.MoreColors.BobRoss.ColorPalette bobRoss;
-    public JBirdEngine.ColorLibrary.MoreColors.Vaporwave.ColorPalette vaporwave;
+	public JBirdLib.ColorLibrary.MoreColors.BobRoss.ColorPalette bobRoss;
+    public JBirdLib.ColorLibrary.MoreColors.Vaporwave.ColorPalette vaporwave;
 
     enum TestEnum {
         ohgeezrick,
@@ -28,12 +28,12 @@ public class TestScript : MonoBehaviour {
     }
 
 	void Start () {
-		JBirdEngine.AI.AIHelper.GetHeuristic(Vector3.zero, Vector3.one, JBirdEngine.AI.AIHelper.HeuristicMode.hexagonal);
+		JBirdLib.AI.AIHelper.GetHeuristic(Vector3.zero, Vector3.one, JBirdLib.AI.AIHelper.HeuristicMode.hexagonal);
         "thisisatest".ToEnum<TestEnum>();
 	}
 
 	void Update () {
-		lumaChromaColor = JBirdEngine.ColorLibrary.ColorHelper.FromChromaAndLuma(hue, saturation, luma);
+		lumaChromaColor = JBirdLib.ColorLibrary.ColorHelper.FromChromaAndLuma(hue, saturation, luma);
 		//Debug.Log(JBirdEngine.ColorLibrary.ColorHelper.GetLuma(JBirdEngine.ColorLibrary.MoreColors.Vaporwave.EnumToColor(vaporwave)));
 		//lumaChromaColor = (Color)(new ColorHelper.ColorHSV(Color.red));
     }

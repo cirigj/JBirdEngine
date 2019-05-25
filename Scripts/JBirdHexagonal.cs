@@ -6,53 +6,116 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace JBirdEngine {
+namespace JBirdLib {
 
-	namespace Hexagonal {
+    namespace Hexagonal {
+
+        public class HexDirection {
+            internal int value;
+
+            public HexDirection(HexDirectionIndex idx) {
+                value = (int)idx;
+            }
+
+            public HexDirection(int i) {
+                value = i;
+            }
+
+            public static implicit operator HexDirection(HexDirectionIndex idx) {
+                return new HexDirection(idx);
+            }
+
+            public static implicit operator HexDirectionIndex(HexDirection c) {
+                return (HexDirectionIndex)c.value;
+            }
+
+            public static implicit operator HexDirection(int i) {
+                return new HexDirection(i);
+            }
+
+            public static implicit operator int(HexDirection c) {
+                return c.value;
+            }
+
+            public static HexDirection operator ++(HexDirection d) {
+                return (d.value + 1) % 6;
+            }
+
+            public static HexDirection Down() {
+                return HexDirectionIndex.Down;
+            }
+
+            public static HexDirection LeftDown() {
+                return HexDirectionIndex.LeftDown;
+            }
+
+            public static HexDirection LeftUp() {
+                return HexDirectionIndex.LeftUp;
+            }
+
+            public static HexDirection Up() {
+                return HexDirectionIndex.Up;
+            }
+
+            public static HexDirection RightUp() {
+                return HexDirectionIndex.RightUp;
+            }
+
+            public static HexDirection RightDown() {
+                return HexDirectionIndex.RightDown;
+            }
+        }
+
+        public static class HexDirectionExtensions {
+            public static HexDirection Reverse(this HexDirection d) {
+                return (d.value + 3) % 6;
+            }
+
+            public static Color GetDebugColor(this HexDirection d) {
+                switch (d) {
+                    case 0:
+                        return Color.red;
+                    case 1:
+                        return Color.green;
+                    case 2:
+                        return Color.blue;
+                    case 3:
+                        return Color.magenta;
+                    case 4:
+                        return Color.yellow;
+                    case 5:
+                        return Color.cyan;
+                    default:
+                        return Color.white;
+                }
+            }
+    }
+
+        public enum HexDirectionIndex {
+            Down = 0,
+            LeftDown = 1,
+            LeftUp = 2,
+            Up = 3,
+            RightUp = 4,
+            RightDown = 5
+        }
+
+        public class HexEdge {
+            public Vector3 point1, point2;
+            public HexEdge(Vector3 pt1, Vector3 pt2) {
+                point1 = pt1;
+                point2 = pt2;
+            }
+            public HexEdge(HexEdge e) {
+                point1 = e.point1;
+                point2 = e.point2;
+            }
+        }
 
         /// <summary>
         /// Contains functions and properties to assist with implementing a hexagonal grid.
         /// </summary>
         public static class HexGrid {
-
-            public enum ConnectionIndex {
-                Down = 0,
-                LeftDown = 1,
-                LeftUp = 2,
-                Up = 3,
-                RightUp = 4,
-                RightDown = 5
-            }
-
-            /// <summary>
-            /// Reverses the connection index.
-            /// </summary>
-            /// <returns>The reversed connection index.</returns>
-            /// <param name="index">Index to reverse.</param>
-            public static int ReverseConnectionIndex (ConnectionIndex index) {
-                return ReverseConnectionIndex((int)index);
-            }
-
-            /// <summary>
-            /// Reverses the connection index.
-            /// </summary>
-            /// <returns>The reversed connection index.</returns>
-            /// <param name="index">Index to reverse.</param>
-            public static int ReverseConnectionIndex (int index) {
-                return (index + 3) % 6;
-            }
-
-            public class Edge {
-                public Vector3 point1, point2;
-                public Edge (Vector3 pt1, Vector3 pt2) {
-                    point1 = pt1;
-                    point2 = pt2;
-                }
-                public Edge (Edge e) {
-                    point1 = e.point1;
-                    point2 = e.point2;
-                }
-            }
 
             private static Vector3 _cornerRight = new Vector3(1f, 0f, 0f) / Mathf.Sin(60f * Mathf.Deg2Rad);
             private static Vector3 _cornerLeft = new Vector3(-1f, 0f, 0f) / Mathf.Sin(60f * Mathf.Deg2Rad);
@@ -64,86 +127,96 @@ namespace JBirdEngine {
             /// <summary>
             /// Right corner of a hex tile.
             /// </summary>
-            public static Vector3 cornerRight {
+            public static Vector3 CornerRight {
                 get { return _cornerRight; }
             }
 
             /// <summary>
             /// Left corner of a hex tile.
             /// </summary>
-            public static Vector3 cornerLeft {
+            public static Vector3 CornerLeft {
                 get { return _cornerLeft; }
             }
 
             /// <summary>
             /// Top-right corner of a hex tile.
             /// </summary>
-            public static Vector3 cornerUpRight {
+            public static Vector3 CornerUpRight {
                 get { return _cornerUpRight; }
             }
 
             /// <summary>
             /// Top-left corner of a hex tile.
             /// </summary>
-            public static Vector3 cornerUpLeft {
+            public static Vector3 CornerUpLeft {
                 get { return _cornerUpLeft; }
             }
 
             /// <summary>
             /// Bottom-right corner of a hex tile.
             /// </summary>
-            public static Vector3 cornerDownRight {
+            public static Vector3 CornerDownRight {
                 get { return _cornerDownRight; }
             }
 
             /// <summary>
             /// Bottom-left corner of a hex tile.
             /// </summary>
-            public static Vector3 cornerDownLeft {
+            public static Vector3 CornerDownLeft {
                 get { return _cornerDownLeft; }
             }
 
-            private static List<Vector3> _corners = ListHelper.ListFromObjects<Vector3>(_cornerDownRight, _cornerDownLeft, _cornerLeft, _cornerUpLeft, _cornerUpRight, _cornerRight);
+            private static readonly List<Vector3> _corners = ListHelper.ListFromObjects<Vector3>(
+                _cornerDownRight,
+                _cornerDownLeft,
+                _cornerLeft,
+                _cornerUpLeft,
+                _cornerUpRight,
+                _cornerRight
+            );
 
             /// <summary>
             /// A list of corners of a hex tile (using the connection index on this list returns the corner that is located in a clockwise direction from the specified connection).
             /// </summary>
-            public static List<Vector3> corners {
+            public static List<Vector3> Corners {
                 get { return new List<Vector3>(_corners); }
             }
 
-            private static List<Edge> _edges = ListHelper.ListFromObjects<Edge>(new Edge(_cornerDownRight, _cornerDownLeft),
-                                                                                new Edge(_cornerDownLeft, _cornerLeft),
-                                                                                new Edge(_cornerLeft, _cornerUpLeft),
-                                                                                new Edge(_cornerUpLeft, _cornerUpRight),
-                                                                                new Edge(_cornerUpRight, _cornerRight),
-                                                                                new Edge(_cornerRight, _cornerDownRight));
+            private static readonly List<HexEdge> _edges = ListHelper.ListFromObjects<HexEdge>(
+                new HexEdge(_cornerDownRight, _cornerDownLeft),
+                new HexEdge(_cornerDownLeft, _cornerLeft),
+                new HexEdge(_cornerLeft, _cornerUpLeft),
+                new HexEdge(_cornerUpLeft, _cornerUpRight),
+                new HexEdge(_cornerUpRight, _cornerRight),
+                new HexEdge(_cornerRight, _cornerDownRight)
+            );
 
             /// <summary>
             /// A list of edges of a hex tile (using the connection index returns the edge perpendicular to the specified connection).
             /// </summary>
-            public static List<Edge> edges {
-                get { return new List<Edge>(_edges); }
+            public static List<HexEdge> Edges {
+                get { return new List<HexEdge>(_edges); }
             }
 
             /// <summary>
             /// Returns the edge perpendicular to the specified connection.
             /// </summary>
-            public static Edge GetEdge (ConnectionIndex direction) {
-                return new Edge(_edges[(int)direction]);
+            public static HexEdge GetEdge (HexDirection direction) {
+                return new HexEdge(_edges[direction]);
             }
 
             /// <summary>
             /// Returns the edge perpendicular to the specified connection as a list of two vectors (the positions of the two corners connection by that edge).
             /// </summary>
-            public static List<Vector3> GetEdgeAsVectorList (ConnectionIndex direction) {
-                List<Vector3> pointList = new List<Vector3>();
-                pointList.Add(edges[(int)direction].point1);
-                pointList.Add(edges[(int)direction].point2);
+            public static List<Vector3> GetEdgePoints (HexDirection direction) {
+                List<Vector3> pointList = new List<Vector3> {
+                    Edges[direction].point1,
+                    Edges[direction].point2
+                };
                 return pointList;
             }
 
-            public static Mesh hexMesh = CreateHexMesh();
+            //public static Mesh hexMesh = CreateHexMesh();
 
             /// <summary>
             /// Creates the hex mesh and stores it in the assets folder.
@@ -222,61 +295,68 @@ namespace JBirdEngine {
             private static Vector3 _linkLeftUp = new Vector3(-Mathf.Cos(30f * Mathf.Deg2Rad), 0f, Mathf.Sin(30f * Mathf.Deg2Rad));
             private static Vector3 _linkLeftDown = new Vector3(-Mathf.Cos(30f * Mathf.Deg2Rad), 0f, -Mathf.Sin(30f * Mathf.Deg2Rad));
 
-            private static List<Vector3> _linkDirections = ListHelper.ListFromObjects<Vector3>(_linkDown, _linkLeftDown, _linkLeftUp, _linkUp, _linkRightUp, _linkRightDown);
+            private static readonly List<Vector3> _linkDirections = ListHelper.ListFromObjects<Vector3>(
+                _linkDown,
+                _linkLeftDown,
+                _linkLeftUp,
+                _linkUp,
+                _linkRightUp,
+                _linkRightDown
+            );
 
             /// <summary>
             /// Returns the list of connection directions between hex tiles.
             /// </summary>
-            public static List<Vector3> linkDirections {
+            public static List<Vector3> LinkDirections {
                 get { return new List<Vector3>(_linkDirections); }
             }
 
             /// <summary>
             /// Returns the vector from the center of the hex tile to the edge shared by the hex tile in the specified direction.
             /// </summary>
-            public static Vector3 GetDirectionVector (ConnectionIndex direction) {
-                return _linkDirections[(int)direction];
+            public static Vector3 GetDirectionVector (HexDirection direction) {
+                return _linkDirections[direction].normalized;
             }
 
             /// <summary>
             /// Vector from center of the hex tile to the top edge.
             /// </summary>
-            public static Vector3 linkUp {
+            public static Vector3 LinkUp {
                 get { return _linkUp; }
             }
 
             /// <summary>
             /// Vector from center of the hex tile to the bottom edge.
             /// </summary>
-            public static Vector3 linkDown {
+            public static Vector3 LinkDown {
                 get { return _linkDown; }
             }
 
             /// <summary>
             /// Vector from center of the hex tile to the top-right edge.
             /// </summary>
-            public static Vector3 linkRightUp {
+            public static Vector3 LinkRightUp {
                 get { return _linkRightUp; }
             }
 
             /// <summary>
             /// Vector from center of the hex tile to the bottom-right edge.
             /// </summary>
-            public static Vector3 linkRightDown {
+            public static Vector3 LinkRightDown {
                 get { return _linkRightDown; }
             }
 
             /// <summary>
             /// Vector from center of the hex tile to the top-left edge.
             /// </summary>
-            public static Vector3 linkLeftUp {
+            public static Vector3 LinkLeftUp {
                 get { return _linkLeftUp; }
             }
 
             /// <summary>
             /// Vector from center of the hex tile to the bottom-left edge.
             /// </summary>
-            public static Vector3 linkLeftDown {
+            public static Vector3 LinkLeftDown {
                 get { return _linkLeftDown; }
             }
 
@@ -289,7 +369,7 @@ namespace JBirdEngine {
                 float bestDotProduct = 0f;
                 Vector3 bestVector = Vector3.zero;
                 original.Normalize();
-                foreach (Vector3 direction in linkDirections) {
+                foreach (Vector3 direction in LinkDirections) {
                     float dotProduct = Vector3.Dot(original, direction);
                     if (dotProduct > bestDotProduct) {
                         bestDotProduct = dotProduct;

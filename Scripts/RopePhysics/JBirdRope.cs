@@ -4,8 +4,8 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using JBirdEngine.EditorHelper;
-using JBirdEngine.ColorLibrary;
+using JBirdLib.EditorHelper;
+using JBirdLib.ColorLibrary;
 
 public class JBirdRope : MonoBehaviour {
 	[Header("Physical Attributes:")]

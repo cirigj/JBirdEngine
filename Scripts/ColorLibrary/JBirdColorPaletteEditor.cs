@@ -3,7 +3,7 @@ using System.Collections;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-using JBirdEngine.ColorLibrary;
+using JBirdLib.ColorLibrary;
 
 /// <summary>
 /// Color palette editor. Allows for changing palette in the inspector.

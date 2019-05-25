@@ -8,10 +8,10 @@ using System.Collections.Generic;
 using UnityEditor;
 #endif
 #if COLOR_LIB
-using JBirdEngine.ColorLibrary;
+using JBirdLib.ColorLibrary;
 #endif
 
-namespace JBirdEngine {
+namespace JBirdLib {
 
 	namespace EditorHelper {
 

@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace JBirdEngine.ColorLibrary {
+namespace JBirdLib.ColorLibrary {
 
     /// <summary>
     /// More colors; because Unity's base colors just aren't enough.

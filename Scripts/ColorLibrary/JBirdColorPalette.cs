@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using JBirdEngine.ColorLibrary;
+using JBirdLib.ColorLibrary;
 
 /// <summary>
 /// Color palette with 5 colors. Can be modified in the inspector using the JBirdPaletteEditor.

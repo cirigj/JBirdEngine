@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using JBirdEngine.ColorLibrary;
+using JBirdLib.ColorLibrary;
 using System.Collections.Generic;
 
 public class LazerPixel : MonoBehaviour {

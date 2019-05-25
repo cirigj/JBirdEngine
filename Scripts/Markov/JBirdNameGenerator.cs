@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using JBirdEngine;
+using JBirdLib;
 
 /// <summary>
 /// I wanted a custom editor so this is literally just a SO container for a custom class.

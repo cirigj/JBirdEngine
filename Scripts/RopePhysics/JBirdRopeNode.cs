@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
-using JBirdEngine.EditorHelper;
-using JBirdEngine;
+using JBirdLib.EditorHelper;
+using JBirdLib;
 
 [System.Serializable]
 public class JBirdRopeNode : MonoBehaviour {

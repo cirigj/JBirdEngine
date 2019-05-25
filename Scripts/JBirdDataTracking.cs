@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace JBirdEngine {
+namespace JBirdLib {
 
 	namespace DataTracking {
 

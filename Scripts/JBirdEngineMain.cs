@@ -7,7 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace JBirdEngine {
+namespace JBirdLib {
 
     /// <summary>
     /// Helpful math functions that don't exist in base UnityEngine.
