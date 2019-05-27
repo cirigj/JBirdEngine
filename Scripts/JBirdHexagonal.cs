@@ -41,6 +41,14 @@ namespace JBirdLib {
                 return (d.value + 1) % 6;
             }
 
+            public static HexDirection operator +(HexDirection d1, HexDirection d2) {
+                int d = d1.value + d2.value;
+                if (d < 0) {
+                    d += 6;
+                }
+                return d % 6;
+            }
+
             public static HexDirection Down() {
                 return HexDirectionIndex.Down;
             }
